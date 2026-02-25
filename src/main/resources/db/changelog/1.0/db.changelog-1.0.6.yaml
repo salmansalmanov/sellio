@@ -1,0 +1,39 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0.6-create-images-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: images
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: file_name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: type
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: secure_url
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: size
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: format
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
