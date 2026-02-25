@@ -13,6 +13,6 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "super_admins")
-public class SuperAdminEntity extends AccountEntity {
+public class SuperAdminEntity extends UserEntity {
     private String username;
 }

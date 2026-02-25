@@ -13,7 +13,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "customers")
-public class CustomerEntity extends AccountEntity {
+public class CustomerEntity extends UserEntity {
     private String firstName;
     private String lastName;
 }
