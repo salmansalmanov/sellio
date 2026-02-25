@@ -1,0 +1,36 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0.1-create-admins-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: admins
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    nullable: false
+                    primaryKey: true
+              - column:
+                  name: first_name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: username
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+                    unique: true
+        - addForeignKeyConstraint:
+            baseTableName: admins
+            baseColumnNames: id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_admins_accounts_id
