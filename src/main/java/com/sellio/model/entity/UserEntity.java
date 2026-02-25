@@ -13,9 +13,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "accounts")
+@Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
-public abstract class AccountEntity extends BaseEntity {
+public abstract class UserEntity extends BaseEntity {
     private String email;
     private String phoneNumber;
     private String password;

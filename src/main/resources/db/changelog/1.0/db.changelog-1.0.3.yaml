@@ -1,0 +1,30 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0.3-create-customers-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: customers
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: first_name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: last_name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: customers
+            baseColumnNames: id
+            referencedTableName: accounts
+            referencedColumnNames: id
+            constraintName: fk_customers_accounts_id

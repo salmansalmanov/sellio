@@ -12,9 +12,7 @@ import lombok.Setter;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "admins")
-public class AdminEntity extends UserEntity {
-    private String firstName;
-    private String lastName;
-    private String username;
+@Table(name = "shops")
+public class ShopEntity extends UserEntity {
+    private String shopName;
 }
