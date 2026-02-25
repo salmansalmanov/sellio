@@ -45,6 +45,9 @@ dependencies {
 
     // Liquibase
     implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
 }
 
 tasks.named('test') {
