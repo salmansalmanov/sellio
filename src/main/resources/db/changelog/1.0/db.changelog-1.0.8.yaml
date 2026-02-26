@@ -1,0 +1,27 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0.8-create-users_phone_numbers-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: users_phone_numbers
+            columns:
+              - column:
+                  name: user_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: phone_number
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: users_phone_numbers
+            baseColumnNames: user_id
+            referencedTableName: users
+            referencedColumnNames: id
+            constraintName: fk_users_phone_numbers_users_user_id
+        - dropColumn:
+            tableName: users
+            columnName: phone_number

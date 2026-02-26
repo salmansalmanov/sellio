@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @NoArgsConstructor
@@ -17,17 +19,20 @@ import lombok.Setter;
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class UserEntity extends BaseEntity {
     private String email;
-    private String phoneNumber;
     private String password;
+
+    @ElementCollection
+    @CollectionTable(name = "users_phone_numbers", joinColumns = @JoinColumn(name = "user_id"))
+    private List<String> phoneNumbers;
     private String stripeCustomerId;
     private String stripeSubscriptionId;
+
+    @Enumerated(EnumType.STRING)
+    private PricingPlan pricingPlan;
 
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Enumerated(EnumType.STRING)
-    private PricingPlan pricingPlan;
 }

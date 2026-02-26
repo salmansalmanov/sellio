@@ -48,6 +48,12 @@ dependencies {
 
     // Swagger
     implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+
+    // Cloudinary
+    implementation 'com.cloudinary:cloudinary-http44:1.39.0'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 }
 
 tasks.named('test') {
