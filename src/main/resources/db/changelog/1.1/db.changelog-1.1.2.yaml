@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.2-add-public_id-to-images
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: images
+            columns:
+              - column:
+                  name: public_id
+                  type: VARCHAR
+                  constraints:
+                    unique: true
+                    nullable: false

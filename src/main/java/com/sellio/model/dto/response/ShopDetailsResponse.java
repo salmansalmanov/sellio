@@ -7,12 +7,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.UUID;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShopResponse extends UserResponse {
+public class ShopDetailsResponse extends UserResponse {
+    private UUID id;
     private String name;
     private String email;
     private String description;

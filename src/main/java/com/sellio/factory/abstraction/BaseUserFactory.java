@@ -18,18 +18,10 @@ public abstract class BaseUserFactory {
         }
     }
 
-    public UserStrategy getStrategy(String role) {
-        Role roleEnum;
-
-        try {
-            roleEnum = Role.valueOf(role.toUpperCase());
-        } catch (Exception e) {
-            throw new ResourceNotFoundException("Role " + role.toUpperCase() + " not found");
-        }
-
-        UserStrategy strategy = strategyMap.get(roleEnum);
+    public UserStrategy getStrategy(Role role) {
+        UserStrategy strategy = strategyMap.get(role);
         if (strategy == null) {
-            throw new ResourceNotFoundException("Service not found for role: " + role.toUpperCase());
+            throw new ResourceNotFoundException("Service not found for role: " + role);
         }
         return strategy;
     }

@@ -3,6 +3,7 @@ package com.sellio.resolver;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.factory.concrete.RegisterRequestFactory;
 import com.sellio.model.dto.request.RegisterRequest;
+import com.sellio.model.enums.Role;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -55,7 +56,7 @@ public class RegisterRequestArgumentResolver implements HandlerMethodArgumentRes
             throw new IllegalArgumentException("Multipart request must contain 'data' parameter");
         }
 
-        Class<? extends RegisterRequest> targetClass = registerRequestFactory.getRequestClassByRole(role);
+        Class<? extends RegisterRequest> targetClass = registerRequestFactory.getRequestClassByRole(Role.valueOf(role.toUpperCase()));
         RegisterRequest registerRequest = objectMapper.readValue(jsonData, targetClass);
 
         if (parameter.hasParameterAnnotation(Valid.class)) {

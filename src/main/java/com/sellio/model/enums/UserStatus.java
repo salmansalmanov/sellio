@@ -1,6 +1,6 @@
 package com.sellio.model.enums;
 
-public enum AccountStatus {
+public enum UserStatus {
     ACTIVE,
     PENDING,
     DELETED

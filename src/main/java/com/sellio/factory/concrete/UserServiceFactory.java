@@ -1,6 +1,7 @@
 package com.sellio.factory.concrete;
 
 import com.sellio.factory.abstraction.BaseUserFactory;
+import com.sellio.model.enums.Role;
 import com.sellio.service.abstraction.UserService;
 import com.sellio.strategy.abstraction.UserStrategy;
 import org.springframework.stereotype.Component;
@@ -13,7 +14,7 @@ public class UserServiceFactory extends BaseUserFactory {
         super(strategyList);
     }
 
-    public UserService getServiceByRole(String role) {
+    public UserService getServiceByRole(Role role) {
         return getStrategy(role).getService();
     }
 }

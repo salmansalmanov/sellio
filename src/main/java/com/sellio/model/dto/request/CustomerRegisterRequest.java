@@ -1,6 +1,7 @@
 package com.sellio.model.dto.request;
 
 import com.sellio.model.enums.PricingPlan;
+import com.sellio.validaiton.annotation.PhoneNumber;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -27,6 +28,10 @@ public class CustomerRegisterRequest extends RegisterRequest {
     @Email(message = "Invalid email format")
     @NotBlank(message = "Email must not be blank")
     private String email;
+
+    @PhoneNumber
+    @NotBlank(message = "Phone number must not be blank")
+    private String phoneNumber;
 
     @NotNull(message = "Pricing plan must not be null")
     private PricingPlan pricingPlan;

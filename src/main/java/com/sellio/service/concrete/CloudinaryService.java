@@ -4,26 +4,32 @@ import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
 import com.sellio.exception.custom.CloudinaryException;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class CloudinaryService {
     private final Cloudinary cloudinary;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> upload(MultipartFile file, String folder) throws IOException {
-        return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
-                ObjectUtils.asMap(
-                        "folder", folder,
-                        "public_id", file.getOriginalFilename(),
-                        "overwrite", true
-                ));
+    public Map<String, Object> upload(MultipartFile file, String folder) {
+        if (file == null) return null;
+        try {
+            return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
+                    ObjectUtils.asMap(
+                            "folder", folder,
+                            "public_id", file.getOriginalFilename(),
+                            "overwrite", true
+                    ));
+        } catch (Exception e) {
+            throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
+        }
     }
 
     public void forceRemoveFolder(String folder) {
@@ -32,7 +38,7 @@ public class CloudinaryService {
                     ObjectUtils.asMap("resource_type", "image", "type", "upload"));
             cloudinary.api().deleteFolder(folder, ObjectUtils.emptyMap());
         } catch (Exception e) {
-            throw new CloudinaryException("Could not delete the folder: " + folder);
+            log.error("Cloudinary exception: {}", e.getMessage());
         }
     }
 }
