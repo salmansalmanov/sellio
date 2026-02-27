@@ -1,7 +1,5 @@
-package com.sellio.model.entity;
+package com.sellio.model.dto.response;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -9,10 +7,9 @@ import lombok.Setter;
 
 @Setter
 @Getter
-@Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Table(name = "super_admins")
-public class SuperAdminEntity extends UserEntity {
+public class AdminResponse extends UserResponse {
+    private String fullName;
     private String username;
 }

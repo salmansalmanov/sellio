@@ -1,6 +1,6 @@
 package com.sellio.model.entity;
 
-import com.sellio.model.enums.AccountStatus;
+import com.sellio.model.enums.UserStatus;
 import com.sellio.model.enums.PricingPlan;
 import com.sellio.model.enums.Role;
 import jakarta.persistence.*;
@@ -9,25 +9,32 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
+@Entity
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "users")
 @Inheritance(strategy = InheritanceType.JOINED)
 public abstract class UserEntity extends BaseEntity {
     private String email;
-    private String phoneNumber;
     private String password;
+
+    @ElementCollection
+    @CollectionTable(name = "users_phone_numbers", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "phone_number")
+    private List<String> phoneNumbers;
     private String stripeCustomerId;
     private String stripeSubscriptionId;
 
     @Enumerated(EnumType.STRING)
-    private AccountStatus status;
+    private PricingPlan pricingPlan;
+
+    @Enumerated(EnumType.STRING)
+    private UserStatus status;
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @Enumerated(EnumType.STRING)
-    private PricingPlan pricingPlan;
 }

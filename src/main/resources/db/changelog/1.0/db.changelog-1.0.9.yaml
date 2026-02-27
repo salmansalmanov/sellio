@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.0.9-add-unique-constraint-for-phone-numbers
+      author: salmansalmanov
+      changes:
+        - addUniqueConstraint:
+            tableName: users_phone_numbers
+            columnNames: phone_number

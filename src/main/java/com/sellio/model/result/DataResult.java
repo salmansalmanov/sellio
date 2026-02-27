@@ -6,8 +6,8 @@ import lombok.Getter;
 public class DataResult<T> extends Result {
     private final T data;
 
-    public DataResult(T data, boolean success, String message, String code) {
-        super(success, message, code);
+    public DataResult(T data, boolean success, String message) {
+        super(success, message);
         this.data = data;
     }
 }
