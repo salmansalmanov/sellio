@@ -6,6 +6,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.List;
+
 @Setter
 @Getter
 @Entity
@@ -31,4 +33,11 @@ public class ShopEntity extends UserEntity {
     )
     @JoinColumn(name = "banner_id")
     private ImageEntity banner;
+
+    @OneToMany(
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            mappedBy = "shop"
+    )
+    private List<ShopAddressEntity> addresses;
 }

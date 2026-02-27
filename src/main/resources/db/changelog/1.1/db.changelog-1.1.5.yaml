@@ -1,0 +1,90 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.5-create-shops_addresses-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: addresses
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: place_id
+                  type: BIGINT
+                  constraints:
+                    nullable: false
+              - column:
+                  name: country
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: city
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: full_address
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: latitude
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: longitude
+                  type: DOUBLE
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP
+        - createTable:
+            tableName: shops_addresses
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: shop_id
+                  type: UUID
+              - column:
+                  name: address_id
+                  type: UUID
+        - addForeignKeyConstraint:
+            baseTableName: shops_addresses
+            baseColumnNames: shop_id
+            referencedTableName: shops
+            referencedColumnNames: id
+            constraintName: fk_shops_addresses_shop_id_shops_id
+            onDelete: CASCADE
+            onUpdate: CASCADE
+        - addForeignKeyConstraint:
+            baseTableName: shops_addresses
+            baseColumnNames: address_id
+            referencedTableName: addresses
+            referencedColumnNames: id
+            constraintName: fk_shops_addresses_address_id_addresses_id
+            onDelete: CASCADE
+            onUpdate: CASCADE
