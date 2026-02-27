@@ -1,4 +1,4 @@
-package com.sellio.model.dto.client;
+package com.sellio.model.dto.domain;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class CloudinaryUploadResponse {
+public class ImageDto {
     private String publicId;
     private String secureUrl;
     private String format;

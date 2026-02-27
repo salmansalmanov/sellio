@@ -35,4 +35,5 @@ public class ShopRegisterRequest extends RegisterRequest {
 
     @NotNull
     private List<String> phoneNumbers;
+    private List<String> placeIds;
 }

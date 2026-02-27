@@ -1,4 +1,4 @@
-package com.sellio.model.dto.response;
+package com.sellio.model.dto.response.core;
 
 import com.sellio.model.enums.PricingPlan;
 import lombok.AllArgsConstructor;
@@ -22,4 +22,5 @@ public class ShopDetailsResponse extends UserResponse {
     private List<String> phoneNumbers;
     private String logoUrl;
     private String bannerUrl;
+    private List<String> addresses;
 }
