@@ -21,3 +21,6 @@ spring:
     cloud-name: ${CLOUDINARY_CLOUD_NAME}
     api-key: ${CLOUDINARY_API_KEY}
     api-secret: ${CLOUDINARY_API_SECRET}
+  google:
+    maps:
+      api-key: ${GOOGLE_MAPS_API_KEY}

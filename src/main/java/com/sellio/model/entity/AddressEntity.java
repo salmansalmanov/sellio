@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @Table(name = "addresses")
 public class AddressEntity extends BaseEntity {
-    private Long placeId;
+    private String placeId;
     private String country;
     private String city;
     private String fullAddress;

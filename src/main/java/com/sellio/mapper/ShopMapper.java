@@ -1,12 +1,15 @@
 package com.sellio.mapper;
 
 import com.sellio.model.dto.request.ShopRegisterRequest;
-import com.sellio.model.dto.response.ShopDetailsResponse;
+import com.sellio.model.dto.response.core.ShopDetailsResponse;
+import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
 import org.mapstruct.AfterMapping;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
+
+import java.util.ArrayList;
 
 @Mapper(componentModel = "spring")
 public interface ShopMapper {
@@ -15,6 +18,7 @@ public interface ShopMapper {
     @Mapping(target = "role", constant = "SHOP")
     ShopEntity toEntity(ShopRegisterRequest shopRegisterRequest);
 
+    @Mapping(target = "addresses", ignore = true)
     ShopDetailsResponse toDetailsResponse(ShopEntity shopEntity);
 
     @AfterMapping
@@ -25,6 +29,15 @@ public interface ShopMapper {
 
         if (source.getBanner() != null) {
             target.setBannerUrl(source.getBanner().getSecureUrl());
+        }
+
+        if (source.getAddresses() != null) {
+            target.setAddresses(new ArrayList<>());
+            for (ShopAddressEntity shopAddressEntity : source.getAddresses()) {
+                if (shopAddressEntity != null) {
+                    target.getAddresses().add(shopAddressEntity.getAddress().getFullAddress());
+                }
+            }
         }
     }
 }

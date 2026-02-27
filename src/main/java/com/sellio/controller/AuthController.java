@@ -1,11 +1,9 @@
 package com.sellio.controller;
 
 import com.sellio.model.dto.request.RegisterRequest;
-import com.sellio.model.dto.response.UserResponse;
+import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.service.abstraction.AuthService;
-import com.sellio.service.abstraction.ShopService;
-import com.sellio.service.abstraction.UserService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;

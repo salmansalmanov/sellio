@@ -1,4 +1,4 @@
-package com.sellio.model.dto.response;
+package com.sellio.model.dto.response.core;
 
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.enums.Role;

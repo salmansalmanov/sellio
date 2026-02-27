@@ -1,4 +1,4 @@
-package com.sellio.model.dto.response;
+package com.sellio.model.dto.response.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

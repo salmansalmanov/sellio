@@ -1,9 +1,6 @@
 package com.sellio.exception.handler;
 
-import com.sellio.exception.custom.AlreadyExistsException;
-import com.sellio.exception.custom.CloudinaryException;
-import com.sellio.exception.custom.InvalidInputException;
-import com.sellio.exception.custom.ResourceNotFoundException;
+import com.sellio.exception.custom.*;
 import com.sellio.model.result.ErrorDataResult;
 import com.sellio.model.result.ErrorResult;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -42,6 +39,12 @@ public class GlobalExceptionHandler {
     @ApiResponse(responseCode = "400", description = "Bad Request")
     public ResponseEntity<ErrorResult> handleInvalidInputException(InvalidInputException ex) {
         return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(GoogleMapsException.class)
+    @ApiResponse(responseCode = "500", description = "Google Maps Error")
+    public ResponseEntity<ErrorResult> handleMethodArgumentNotValid(GoogleMapsException ex) {
+        return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

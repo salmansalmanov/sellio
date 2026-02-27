@@ -7,7 +7,7 @@ import com.sellio.model.dto.request.AdminRegisterRequest;
 import com.sellio.model.dto.request.CustomerRegisterRequest;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
-import com.sellio.model.dto.response.UserResponse;
+import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.enums.Role;
 import com.sellio.model.result.DataResult;
 import com.sellio.repository.AdminRepository;

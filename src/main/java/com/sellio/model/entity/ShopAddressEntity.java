@@ -23,6 +23,6 @@ public class ShopAddressEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     private ShopEntity shop;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     private AddressEntity address;
 }
