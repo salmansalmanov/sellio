@@ -6,6 +6,7 @@ import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.domain.ImageDto;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
+import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AddressEntity;
 import com.sellio.model.entity.ImageEntity;
@@ -14,7 +15,9 @@ import com.sellio.model.entity.ShopEntity;
 import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.DataResult;
+import com.sellio.model.result.PageData;
 import com.sellio.model.result.SuccessDataResult;
+import com.sellio.repository.ShopRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
 import com.sellio.service.abstraction.ShopService;
@@ -22,6 +25,9 @@ import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -41,6 +47,7 @@ public class ShopServiceImpl implements ShopService {
     private final MailService mailService;
     private final AddressService addressService;
     private final FileUtil fileUtil;
+    private final ShopRepository shopRepository;
 
     @Override
     @Transactional
@@ -57,6 +64,24 @@ public class ShopServiceImpl implements ShopService {
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
+    }
+
+    @Override
+    public DataResult<PageData<ShopResponse>> getAllShops(int page, int size) {
+        PageRequest pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        Page<ShopEntity> shopPage = shopRepository.findAll(pageable);
+
+        PageData<ShopResponse> shopResponsePageData = new PageData<>(
+                shopPage.getTotalPages(),
+                shopPage.getTotalElements(),
+                shopPage.isFirst(),
+                shopPage.isLast(),
+                shopPage.getSize(),
+                shopPage.getNumber(),
+                shopMapper.toResponses(shopPage.getContent())
+        );
+
+        return new SuccessDataResult<>(shopResponsePageData, "Shops found successfully");
     }
 
     private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
