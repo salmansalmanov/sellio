@@ -18,13 +18,13 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> upload(MultipartFile file, String folder) {
+    public Map<String, Object> upload(MultipartFile file, String folder, String fileName) {
         if (file == null) return null;
         try {
             return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
                     ObjectUtils.asMap(
                             "folder", folder,
-                            "public_id", file.getOriginalFilename(),
+                            "public_id", fileName,
                             "overwrite", true
                     ));
         } catch (Exception e) {
@@ -37,8 +37,7 @@ public class CloudinaryService {
             cloudinary.api().deleteResourcesByPrefix(folder + "/",
                     ObjectUtils.asMap("resource_type", "image", "type", "upload"));
             cloudinary.api().deleteFolder(folder, ObjectUtils.emptyMap());
-        } catch (Exception e) {
-            log.error("Cloudinary exception: {}", e.getMessage());
+        } catch (Exception ignore) {
         }
     }
 }
