@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
@@ -25,7 +26,7 @@ public abstract class UserEntity extends BaseEntity {
     @ElementCollection
     @CollectionTable(name = "users_phone_numbers", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "phone_number")
-    private List<String> phoneNumbers;
+    private List<String> phoneNumbers = new ArrayList<>();
     private String stripeCustomerId;
     private String stripeSubscriptionId;
 
