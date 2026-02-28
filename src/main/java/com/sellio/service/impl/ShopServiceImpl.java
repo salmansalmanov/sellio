@@ -18,6 +18,7 @@ import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
 import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
+import com.sellio.service.concrete.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -34,6 +35,7 @@ public class ShopServiceImpl implements ShopService {
     private final CloudinaryService cloudinaryService;
     private final ImageMapper imageMapper;
     private final UserRepository userRepository;
+    private final MailService mailService;
     private final AddressService addressService;
 
     @Override
@@ -48,6 +50,7 @@ public class ShopServiceImpl implements ShopService {
 
         shopEntity.setStatus(UserStatus.ACTIVE);
         ShopEntity savedEntity = userRepository.save(shopEntity);
+        mailService.sendRegistrationMail(shopEntity.getEmail());
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
 
