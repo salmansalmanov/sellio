@@ -47,6 +47,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(MailException.class)
+    @ApiResponse(responseCode = "500", description = "Mail Error")
+    public ResponseEntity<ErrorResult> handleMailException(MailException ex) {
+        return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ApiResponse(responseCode = "400", description = "Bad Request")
     public ResponseEntity<ErrorDataResult<Map<String, String>>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {
