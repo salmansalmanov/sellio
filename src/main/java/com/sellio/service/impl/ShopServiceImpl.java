@@ -20,6 +20,7 @@ import com.sellio.service.abstraction.AddressService;
 import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
+import com.sellio.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -39,6 +40,7 @@ public class ShopServiceImpl implements ShopService {
     private final UserRepository userRepository;
     private final MailService mailService;
     private final AddressService addressService;
+    private final FileUtil fileUtil;
 
     @Override
     @Transactional
@@ -60,11 +62,13 @@ public class ShopServiceImpl implements ShopService {
     private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
         ImageEntity imageEntity = null;
         if (file != null) {
-            String folder = "shops/" + shopEntity.getName();
-            String newFileName = imageType.name() + "-" + UUID.randomUUID();
-            Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
-            ImageDto cloudinaryUploadResponse = imageMapper.toCloudinaryUploadResponse(cloudinaryUploadResponseData);
-            imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
+            if (fileUtil.isValidImage(file)) {
+                String folder = "shops/" + shopEntity.getName();
+                String newFileName = imageType.name() + "-" + UUID.randomUUID();
+                Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
+                ImageDto cloudinaryUploadResponse = imageMapper.toCloudinaryUploadResponse(cloudinaryUploadResponseData);
+                imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
+            }
         }
         return imageEntity;
     }
