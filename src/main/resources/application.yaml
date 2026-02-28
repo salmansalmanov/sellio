@@ -42,3 +42,7 @@ spring:
   super-admin:
     username: ${SUPER_ADMIN_USERNAME}
     password: ${SUPER_ADMIN_PASSWORD}
+  data:
+    redis:
+      host: ${REDIS_HOST}
+      port: ${REDIS_PORT}

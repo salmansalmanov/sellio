@@ -9,7 +9,8 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class AdminResponse extends UserResponse {
-    private String fullName;
+public class AdminDetailsResponse extends UserResponse {
+    private String firstName;
+    private String lastName;
     private String username;
 }

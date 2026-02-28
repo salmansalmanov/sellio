@@ -1,6 +1,5 @@
 package com.sellio.model.dto.request;
 
-import com.sellio.validation.annotation.Password;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -12,13 +11,9 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public abstract class RegisterRequest {
+public class AdminInviteRequest {
 
-    @Email(message = "Invalid email format")
+    @Email
     @NotBlank(message = "Email must not be blank")
     private String email;
-
-    @Password
-    @NotBlank(message = "Password must not be blank")
-    private String password;
 }
