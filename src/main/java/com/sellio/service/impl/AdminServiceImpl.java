@@ -6,13 +6,11 @@ import com.sellio.mapper.AdminMapper;
 import com.sellio.model.dto.request.AdminInviteRequest;
 import com.sellio.model.dto.request.AdminRegisterRequest;
 import com.sellio.model.dto.request.RegisterRequest;
-import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.SuccessDataResult;
-import com.sellio.repository.AdminRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
 import com.sellio.service.concrete.MailService;
@@ -31,7 +29,6 @@ public class AdminServiceImpl implements AdminService {
     private final RedisTemplate<String, String> redisTemplate;
     private final MailService mailService;
     private final AdminMapper adminMapper;
-    private final AdminRepository adminRepository;
 
     @Override
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {

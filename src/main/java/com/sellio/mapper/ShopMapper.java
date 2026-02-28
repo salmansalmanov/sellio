@@ -2,6 +2,7 @@ package com.sellio.mapper;
 
 import com.sellio.model.dto.request.ShopRegisterRequest;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
+import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
 import org.mapstruct.AfterMapping;
@@ -10,6 +11,7 @@ import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Mapper(componentModel = "spring")
 public interface ShopMapper {
@@ -39,5 +41,22 @@ public interface ShopMapper {
                 }
             }
         }
+    }
+
+    ShopResponse toResponse(ShopEntity shopEntity);
+
+    @AfterMapping
+    default void afterMapping(ShopEntity source, @MappingTarget ShopResponse target) {
+        if (source.getLogo() != null) {
+            target.setLogoUrl(source.getLogo().getSecureUrl());
+        } else {
+            target.setLogoUrl(null);
+        }
+    }
+
+    default List<ShopResponse> toResponses(List<ShopEntity> shopEntities) {
+        return shopEntities.stream()
+                .map(this::toResponse)
+                .toList();
     }
 }

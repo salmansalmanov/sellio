@@ -32,7 +32,7 @@ public class AuthController {
                     @ApiResponse(description = "Success", responseCode = "201")
             }
     )
-    public ResponseEntity<? extends DataResult<UserResponse>> register(
+    public ResponseEntity<DataResult<UserResponse>> register(
             @Valid RegisterRequest request,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner,
