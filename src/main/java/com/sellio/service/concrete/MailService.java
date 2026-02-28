@@ -38,9 +38,27 @@ public class MailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(mimeMessage);
-            System.out.println("Mail Sent Successfully");
         } catch (Exception e) {
-            System.out.println("Mail Sent Failed");
+            throw new MailException("Mail exception: " + e.getMessage());
+        }
+    }
+
+    public void sendAdminInvitationMail(String to, String token) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/admin-invitation.html");
+            String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
+            htmlContent = htmlContent.replace("${token}", token);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Admin Token");
+            helper.setFrom(from);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
             throw new MailException("Mail exception: " + e.getMessage());
         }
     }
