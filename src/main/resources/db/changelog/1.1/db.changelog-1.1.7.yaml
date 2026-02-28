@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.7-refactor-users-table
+      author: salmansalmanov
+      changes:
+        - dropColumn:
+            tableName: users
+            columnName: stripe_subscription_id
+        - dropColumn:
+            tableName: users
+            columnName: stripe_customer_id
+        - dropNotNullConstraint:
+            tableName: users
+            columnName: email
+        - dropNotNullConstraint:
+            tableName: users
+            columnName: pricing_plan
