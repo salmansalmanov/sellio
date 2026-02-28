@@ -1,6 +1,7 @@
 package com.sellio.service.impl;
 
 import com.sellio.exception.custom.AlreadyExistsException;
+import com.sellio.exception.custom.InvalidInputException;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.factory.concrete.UserServiceFactory;
 import com.sellio.model.dto.request.AdminRegisterRequest;
@@ -34,7 +35,7 @@ public class AuthServiceImpl implements AuthService {
         try {
             roleEnum = Role.valueOf(role.toUpperCase());
         } catch (Exception e) {
-            throw new ResourceNotFoundException("Invalid role");
+            throw new InvalidInputException("Invalid role");
         }
         UserService userService = userServiceFactory.getServiceByRole(roleEnum);
         return userService.save(registerRequest, logo, banner);

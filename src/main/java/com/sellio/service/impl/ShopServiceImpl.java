@@ -11,6 +11,7 @@ import com.sellio.model.entity.AddressEntity;
 import com.sellio.model.entity.ImageEntity;
 import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
+import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.SuccessDataResult;
@@ -27,6 +28,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -45,7 +47,8 @@ public class ShopServiceImpl implements ShopService {
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
         ShopEntity shopEntity = shopMapper.toEntity(shopRegisterRequest);
 
-        initializeImages(shopEntity, logo, banner);
+        shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
+        shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
         initializeAddresses(shopEntity, shopRegisterRequest.getPlaceIds());
 
         shopEntity.setStatus(UserStatus.ACTIVE);
@@ -54,21 +57,16 @@ public class ShopServiceImpl implements ShopService {
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
 
-    private void initializeImages(ShopEntity shopEntity, MultipartFile logo, MultipartFile banner) {
-        String folder = "shops/" + shopEntity.getName();
-
-        if (logo != null) {
-            Map<String, Object> logoResponseJson = cloudinaryService.upload(logo, folder);
-            ImageDto logoUploadResponse = imageMapper.toCloudinaryUploadResponse(logoResponseJson);
-            ImageEntity logoEntity = imageMapper.toEntity(logoUploadResponse);
-            shopEntity.setLogo(logoEntity);
+    private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
+        ImageEntity imageEntity = null;
+        if (file != null) {
+            String folder = "shops/" + shopEntity.getName();
+            String newFileName = imageType.name() + "-" + UUID.randomUUID();
+            Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
+            ImageDto cloudinaryUploadResponse = imageMapper.toCloudinaryUploadResponse(cloudinaryUploadResponseData);
+            imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
         }
-        if (banner != null) {
-            Map<String, Object> bannerResponseJson = cloudinaryService.upload(banner, folder);
-            ImageDto bannerUploadResponse = imageMapper.toCloudinaryUploadResponse(bannerResponseJson);
-            ImageEntity bannerEntity = imageMapper.toEntity(bannerUploadResponse);
-            shopEntity.setBanner(bannerEntity);
-        }
+        return imageEntity;
     }
 
     private void initializeAddresses(ShopEntity shopEntity, List<String> placeIds) {
