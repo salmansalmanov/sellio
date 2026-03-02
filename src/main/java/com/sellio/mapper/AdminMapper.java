@@ -1,6 +1,7 @@
 package com.sellio.mapper;
 
 import com.sellio.model.dto.request.AdminRegisterRequest;
+import com.sellio.model.dto.request.AdminUpdateRequest;
 import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.entity.AdminEntity;
@@ -33,4 +34,6 @@ public interface AdminMapper {
                 .map(this::toResponse)
                 .toList();
     }
+
+    AdminEntity updateRequestToEntity(AdminUpdateRequest request, @MappingTarget AdminEntity entity);
 }

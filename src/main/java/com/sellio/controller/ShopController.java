@@ -10,6 +10,7 @@ import com.sellio.model.result.SuccessResult;
 import com.sellio.service.abstraction.ShopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -48,7 +49,7 @@ public class ShopController {
     )
     public ResponseEntity<DataResult<ShopDetailsResponse>> updateShopById(
             @PathVariable UUID id,
-            @RequestPart("data") ShopUpdateRequest shopUpdateRequest,
+            @RequestPart("data") @Valid ShopUpdateRequest shopUpdateRequest,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner
     ) {

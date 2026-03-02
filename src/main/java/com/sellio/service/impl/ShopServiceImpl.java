@@ -118,7 +118,6 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) {
-        userUtil.checkShop(request);
         ShopEntity shopEntity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
@@ -127,6 +126,7 @@ public class ShopServiceImpl implements ShopService {
         shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
         shopEntity.setAddresses(new ArrayList<>());
         initializeAddresses(shopEntity, request.getPlaceIds());
+        shopRepository.save(shopEntity);
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }

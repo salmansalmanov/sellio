@@ -40,13 +40,4 @@ public class UserUtil {
             }
         }
     }
-
-    public void checkShop(ShopUpdateRequest shopUpdateRequest) {
-        if (shopRepository.existsByName(shopUpdateRequest.getName())) {
-            throw new AlreadyExistsException("Shop name already exists");
-        }
-        if (userRepository.existsByPhoneNumbers(shopUpdateRequest.getPhoneNumbers())) {
-            throw new AlreadyExistsException("Phone number already exists");
-        }
-    }
 }

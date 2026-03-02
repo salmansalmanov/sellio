@@ -6,6 +6,7 @@ import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.AdminMapper;
 import com.sellio.model.dto.request.AdminInviteRequest;
 import com.sellio.model.dto.request.AdminRegisterRequest;
+import com.sellio.model.dto.request.AdminUpdateRequest;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
@@ -19,6 +20,7 @@ import com.sellio.repository.AdminRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
 import com.sellio.service.concrete.MailService;
+import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +41,7 @@ public class AdminServiceImpl implements AdminService {
     private final MailService mailService;
     private final AdminMapper adminMapper;
     private final AdminRepository adminRepository;
+    private final UserUtil userUtil;
 
     @Override
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
@@ -92,5 +95,15 @@ public class AdminServiceImpl implements AdminService {
         AdminEntity adminEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         return new SuccessDataResult<>(adminMapper.toDetailsResponse(adminEntity), "Admin found successfully");
+    }
+
+    @Override
+    public DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request) {
+        AdminEntity entity = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        entity = adminMapper.updateRequestToEntity(request, entity);
+        adminRepository.save(entity);
+
+        return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
     }
 }
