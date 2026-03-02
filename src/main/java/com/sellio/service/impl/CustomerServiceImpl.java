@@ -1,8 +1,10 @@
 package com.sellio.service.impl;
 
+import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.CustomerMapper;
 import com.sellio.model.dto.request.CustomerRegisterRequest;
 import com.sellio.model.dto.request.RegisterRequest;
+import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.CustomerEntity;
@@ -21,6 +23,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -54,5 +58,12 @@ public class CustomerServiceImpl implements CustomerService {
                 customerMapper.toResponses(customerPage.getContent())
         );
         return new SuccessDataResult<>(customerResponsePageData, "Customers found successfully");
+    }
+
+    @Override
+    public DataResult<CustomerDetailsResponse> getCustomerById(UUID id) {
+        CustomerEntity customerEntity = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer found successfully");
     }
 }
