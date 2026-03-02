@@ -1,6 +1,7 @@
 package com.sellio.mapper;
 
 import com.sellio.model.dto.request.CustomerRegisterRequest;
+import com.sellio.model.dto.request.CustomerUpdateRequest;
 import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.entity.CustomerEntity;
@@ -49,5 +50,13 @@ public interface CustomerMapper {
         return entities.stream()
                 .map(this::toResponse)
                 .toList();
+    }
+
+    CustomerEntity updateRequestToEntity(CustomerUpdateRequest request, @MappingTarget CustomerEntity customerEntity);
+
+    @AfterMapping
+    default void afterMapping(CustomerUpdateRequest source, @MappingTarget CustomerEntity target) {
+        target.setPhoneNumbers(new ArrayList<>());
+        target.getPhoneNumbers().add(source.getPhoneNumber());
     }
 }

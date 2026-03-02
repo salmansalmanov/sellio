@@ -3,6 +3,7 @@ package com.sellio.service.impl;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.CustomerMapper;
 import com.sellio.model.dto.request.CustomerRegisterRequest;
+import com.sellio.model.dto.request.CustomerUpdateRequest;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
@@ -65,5 +66,14 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer found successfully");
+    }
+
+    @Override
+    public DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request) {
+        CustomerEntity customerEntity = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        customerEntity = customerMapper.updateRequestToEntity(request, customerEntity);
+        customerRepository.save(customerEntity);
+        return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer updated successfully");
     }
 }
