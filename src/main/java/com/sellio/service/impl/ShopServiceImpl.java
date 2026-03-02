@@ -125,6 +125,7 @@ public class ShopServiceImpl implements ShopService {
         shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
         shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
         shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
+        shopEntity.setAddresses(new ArrayList<>());
         initializeAddresses(shopEntity, request.getPlaceIds());
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
