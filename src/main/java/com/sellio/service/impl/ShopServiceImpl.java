@@ -133,9 +133,9 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public void deleteShopById(UUID id) {
-        if (!shopRepository.existsById(id)) {
-            throw new ResourceNotFoundException("Shop not found with id: " + id);
-        }
+        ShopEntity entity = shopRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+        cloudinaryService.forceRemoveFolder("shops/" + entity.getName());
         shopRepository.deleteById(id);
     }
 
