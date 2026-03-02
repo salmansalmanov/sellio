@@ -2,10 +2,12 @@ package com.sellio.service.impl;
 
 import com.sellio.exception.custom.AlreadyExistsException;
 import com.sellio.exception.custom.InvalidInputException;
+import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.AdminMapper;
 import com.sellio.model.dto.request.AdminInviteRequest;
 import com.sellio.model.dto.request.AdminRegisterRequest;
 import com.sellio.model.dto.request.RegisterRequest;
+import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
@@ -83,5 +85,12 @@ public class AdminServiceImpl implements AdminService {
                 adminMapper.toResponses(adminPage.getContent())
         );
         return new SuccessDataResult<>(adminResponsePageData, "Admins found successfully");
+    }
+
+    @Override
+    public DataResult<AdminDetailsResponse> getAdminById(UUID id) {
+        AdminEntity adminEntity = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        return new SuccessDataResult<>(adminMapper.toDetailsResponse(adminEntity), "Admin found successfully");
     }
 }

@@ -1,6 +1,7 @@
 package com.sellio.controller;
 
 import com.sellio.model.dto.request.AdminInviteRequest;
+import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.result.*;
 import com.sellio.service.abstraction.AdminService;
@@ -11,6 +12,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -43,5 +46,16 @@ public class AdminController {
             @RequestParam(defaultValue = "10") int size
     ) {
         return new ResponseEntity<>(adminService.getAllAdmins(page, size), HttpStatus.OK);
+    }
+
+    @GetMapping("/{id}")
+    @Operation(
+            description = "Get admin by ID",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<DataResult<AdminDetailsResponse>> getAdminById(@PathVariable UUID id) {
+        return new ResponseEntity<>(adminService.getAdminById(id), HttpStatus.OK);
     }
 }
