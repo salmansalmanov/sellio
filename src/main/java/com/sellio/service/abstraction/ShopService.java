@@ -17,4 +17,6 @@ public interface ShopService extends UserService {
     DataResult<ShopDetailsResponse> getShopById(UUID id);
 
     DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner);
+
+    void deleteShopById(UUID id);
 }

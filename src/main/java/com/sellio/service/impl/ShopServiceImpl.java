@@ -130,6 +130,14 @@ public class ShopServiceImpl implements ShopService {
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
+    @Override
+    public void deleteShopById(UUID id) {
+        if (!shopRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Shop not found with id: " + id);
+        }
+        shopRepository.deleteById(id);
+    }
+
     private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
         ImageEntity imageEntity = null;
         if (file != null) {

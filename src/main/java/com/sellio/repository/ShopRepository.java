@@ -15,4 +15,6 @@ public interface ShopRepository extends JpaRepository<ShopEntity, UUID> {
     @NullMarked
     @EntityGraph(value = "ShopWithAddresses", type = EntityGraph.EntityGraphType.LOAD)
     Page<ShopEntity> findAll(Pageable pageable);
+
+    boolean existsById(UUID id);
 }

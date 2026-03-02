@@ -5,6 +5,8 @@ import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
+import com.sellio.model.result.Result;
+import com.sellio.model.result.SuccessResult;
 import com.sellio.service.abstraction.ShopService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -51,5 +53,12 @@ public class ShopController {
             @RequestPart(value = "banner", required = false) MultipartFile banner
     ) {
         return new ResponseEntity<>(shopService.updateShopById(id, shopUpdateRequest, logo, banner), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(summary = "Delete shop by ID")
+    public ResponseEntity<Result> deleteShopById(@PathVariable UUID id) {
+        shopService.deleteShopById(id);
+        return new ResponseEntity<>(new SuccessResult("Shop deleted successfully"), HttpStatus.OK);
     }
 }
