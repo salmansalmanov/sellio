@@ -106,4 +106,11 @@ public class AdminServiceImpl implements AdminService {
 
         return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
     }
+
+    @Override
+    public void deleteAdminById(UUID id) {
+        AdminEntity entity = adminRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        adminRepository.delete(entity);
+    }
 }

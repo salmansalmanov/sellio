@@ -74,4 +74,16 @@ public class AdminController {
     ) {
         return new ResponseEntity<>(adminService.updateAdminById(id, request), HttpStatus.OK);
     }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            description = "Delete admin by ID",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<Result> deleteAdminById(@PathVariable UUID id) {
+        adminService.deleteAdminById(id);
+        return ResponseEntity.ok(new SuccessResult("Admin deleted successfully"));
+    }
 }

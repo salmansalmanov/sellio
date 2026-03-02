@@ -6,6 +6,7 @@ import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
+import com.sellio.model.result.Result;
 
 import java.util.UUID;
 
@@ -17,4 +18,6 @@ public interface AdminService extends UserService {
     DataResult<AdminDetailsResponse> getAdminById(UUID id);
 
     DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request);
+
+    void deleteAdminById(UUID id);
 }
