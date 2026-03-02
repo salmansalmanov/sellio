@@ -1,11 +1,13 @@
 package com.sellio.service.impl;
 
 import com.sellio.aop.annotation.CleanupCloudinary;
+import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ImageMapper;
 import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.domain.ImageDto;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
+import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AddressEntity;
@@ -28,14 +30,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -48,6 +48,7 @@ public class ShopServiceImpl implements ShopService {
     private final AddressService addressService;
     private final FileUtil fileUtil;
     private final ShopRepository shopRepository;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -80,8 +81,36 @@ public class ShopServiceImpl implements ShopService {
                 shopPage.getNumber(),
                 shopMapper.toResponses(shopPage.getContent())
         );
+        for (ShopResponse shopResponse : shopResponsePageData.getContent()) {
+            Object viewCount = redisTemplate.opsForValue().get(shopResponse.getId().toString());
+            if (viewCount == null) {
+                redisTemplate.opsForValue().set(shopResponse.getId().toString(), String.valueOf(0));
+            } else {
+                shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
+            }
+        }
 
         return new SuccessDataResult<>(shopResponsePageData, "Shops found successfully");
+    }
+
+    @Override
+    public DataResult<ShopDetailsResponse> getShopById(UUID id) {
+        ShopEntity shopEntity = shopRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+
+        ShopDetailsResponse shopDetailsResponse = shopMapper.toDetailsResponse(shopEntity);
+        Object viewCount = redisTemplate.opsForValue().get(shopEntity.getId().toString());
+
+        if (viewCount == null) {
+            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(1));
+            shopDetailsResponse.setViewCount(1L);
+        } else {
+            long longViewCount = Long.parseLong(viewCount.toString()) + 1;
+            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(longViewCount));
+            shopDetailsResponse.setViewCount(longViewCount);
+        }
+
+        return new SuccessDataResult<>(shopDetailsResponse, "Shop found successfully");
     }
 
     private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {

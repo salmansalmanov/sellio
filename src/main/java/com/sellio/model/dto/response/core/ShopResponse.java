@@ -18,4 +18,5 @@ public class ShopResponse {
     private String logoUrl;
     private String description;
     private List<String> phoneNumbers;
+    private Long viewCount = 0L;
 }
