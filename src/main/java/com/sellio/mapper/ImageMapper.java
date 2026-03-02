@@ -3,41 +3,29 @@ package com.sellio.mapper;
 import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.entity.ImageEntity;
 import com.sellio.model.enums.ImageType;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import org.springframework.stereotype.Component;
 
 import java.util.Map;
 
-@Mapper(componentModel = "spring")
-public interface ImageMapper {
+@Component
+public class ImageMapper {
+    public ImageResponse toResponse(Map<String, Object> data) {
+        return ImageResponse.builder()
+                .publicId((String) data.get("public_id"))
+                .secureUrl((String) data.get("secure_url"))
+                .format((String) data.get("format"))
+                .bytes((Number) data.get("bytes"))
+                .build();
+    }
 
-    @Mapping(target = "publicId", expression = "java((String) json.get(\"public_id\"))")
-    @Mapping(target = "secureUrl", expression = "java((String) json.get(\"secure_url\"))")
-    @Mapping(target = "format", expression = "java((String) json.get(\"format\"))")
-    @Mapping(target = "bytes", expression = "java((Number) json.get(\"bytes\"))")
-    ImageResponse toCloudinaryUploadResponse(Map<String, Object> json);
-
-    @Mapping(target = "publicId", ignore = true)
-    ImageEntity toEntity(ImageResponse imageResponse);
-
-    @AfterMapping
-    default void afterMapping(ImageResponse source, @MappingTarget ImageEntity target) {
-        if (source.getPublicId() != null) {
-            String publicId = source.getPublicId();
-            target.setPublicId(publicId);
-
-            String fileName = publicId.substring(publicId.lastIndexOf('/') + 1);
-            target.setFileName(fileName);
-
-            target.setType(ImageType.LOGO);
-        }
-
-        if (source.getBytes() != null) {
-            target.setSize(source.getBytes().longValue());
-        } else {
-            target.setSize(0L);
-        }
+    public ImageEntity toEntity(ImageResponse response) {
+        return ImageEntity.builder()
+                .fileName(response.getPublicId().substring(response.getPublicId().lastIndexOf('/') + 1))
+                .publicId(response.getPublicId())
+                .secureUrl(response.getSecureUrl())
+                .format(response.getFormat())
+                .size(response.getBytes().longValue())
+                .type(ImageType.LOGO)
+                .build();
     }
 }

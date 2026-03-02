@@ -2,8 +2,8 @@ package com.sellio.service.impl;
 
 import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.exception.custom.ResourceNotFoundException;
-import com.sellio.mapper.ImageMapper;
 import com.sellio.mapper.ShopMapper;
+import com.sellio.mapper.ImageMapper;
 import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
@@ -146,7 +146,7 @@ public class ShopServiceImpl implements ShopService {
                 String folder = "shops/" + shopEntity.getName();
                 String newFileName = imageType.name() + "-" + UUID.randomUUID();
                 Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
-                ImageResponse cloudinaryUploadResponse = imageMapper.toCloudinaryUploadResponse(cloudinaryUploadResponseData);
+                ImageResponse cloudinaryUploadResponse = imageMapper.toResponse(cloudinaryUploadResponseData);
                 imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
             }
         }
