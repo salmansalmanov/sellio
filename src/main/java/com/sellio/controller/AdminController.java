@@ -1,21 +1,21 @@
 package com.sellio.controller;
 
 import com.sellio.model.dto.request.AdminInviteRequest;
-import com.sellio.model.result.Result;
-import com.sellio.model.result.SuccessResult;
+import com.sellio.model.dto.response.core.AdminResponse;
+import com.sellio.model.result.*;
 import com.sellio.service.abstraction.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/admins")
+@Tag(name = "Admin Controller", description = "Admin APIs")
 public class AdminController {
     private final AdminService adminService;
 
@@ -29,5 +29,19 @@ public class AdminController {
     public ResponseEntity<Result> inviteAdmin(@RequestBody AdminInviteRequest request) {
         adminService.invite(request);
         return ResponseEntity.ok(new SuccessResult("Admin invited successfully"));
+    }
+
+    @GetMapping
+    @Operation(
+            description = "Get all admins",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<DataResult<PageData<AdminResponse>>> getAllAdmins(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return new ResponseEntity<>(adminService.getAllAdmins(page, size), HttpStatus.OK);
     }
 }

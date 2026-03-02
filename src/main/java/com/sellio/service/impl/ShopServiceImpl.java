@@ -72,7 +72,7 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     public DataResult<PageData<ShopResponse>> getAllShops(int page, int size) {
-        PageRequest pageable = PageRequest.of(0, 10, Sort.by("createdAt").descending());
+        PageRequest pageable = PageRequest.of(page, size, Sort.by("createdAt").descending());
         Page<ShopEntity> shopPage = shopRepository.findAll(pageable);
 
         PageData<ShopResponse> shopResponsePageData = new PageData<>(
