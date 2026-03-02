@@ -18,7 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/auth")
-@Tag(name = "Auth", description = "Auth APIs")
+@Tag(name = "Auth Controller", description = "Auth APIs")
 public class AuthController {
     private final AuthService authService;
 

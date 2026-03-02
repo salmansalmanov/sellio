@@ -14,6 +14,10 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "shops")
+@NamedEntityGraph(
+        name = "ShopWithAddresses",
+        attributeNodes = @NamedAttributeNode("addresses")
+)
 public class ShopEntity extends UserEntity {
     private String name;
     private String description;

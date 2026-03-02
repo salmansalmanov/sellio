@@ -1,22 +1,20 @@
 package com.sellio.model.dto.response.core;
 
+import com.sellio.model.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.UUID;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ShopResponse {
+public class AdminResponse {
     private UUID id;
-    private String name;
-    private String logoUrl;
-    private String description;
-    private List<String> phoneNumbers;
-    private Long viewCount = 0L;
+    private String fullName;
+    private String username;
+    private UserStatus status;
 }

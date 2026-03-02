@@ -23,4 +23,5 @@ public class ShopDetailsResponse extends UserResponse {
     private String logoUrl;
     private String bannerUrl;
     private List<String> addresses;
+    private Long viewCount = 0L;
 }

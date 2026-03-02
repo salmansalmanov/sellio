@@ -25,10 +25,6 @@ public class CustomerRegisterRequest extends RegisterRequest {
     @Size(min = 3, max = 20, message = "Last name must be between 3 and 20")
     private String lastName;
 
-    @Email(message = "Invalid email format")
-    @NotBlank(message = "Email must not be blank")
-    private String email;
-
     @PhoneNumber
     @NotBlank(message = "Phone number must not be blank")
     private String phoneNumber;
