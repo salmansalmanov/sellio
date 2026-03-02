@@ -38,7 +38,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         CustomerRegisterRequest customerRegisterRequest = (CustomerRegisterRequest) registerRequest;
-        CustomerEntity customerEntity = customerMapper.toEntity(customerRegisterRequest);
+        CustomerEntity customerEntity = customerMapper.registerRequestToEntity(customerRegisterRequest);
         customerEntity.setStatus(UserStatus.ACTIVE);
         CustomerEntity savedEntity = userRepository.save(customerEntity);
         mailService.sendRegistrationMail(savedEntity.getEmail());
