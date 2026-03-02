@@ -1,4 +1,4 @@
-package com.sellio.model.dto.domain;
+package com.sellio.model.dto.response.core;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,7 +9,7 @@ import lombok.Setter;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ImageDto {
+public class ImageResponse {
     private String publicId;
     private String secureUrl;
     private String format;

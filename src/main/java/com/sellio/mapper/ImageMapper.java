@@ -1,6 +1,6 @@
 package com.sellio.mapper;
 
-import com.sellio.model.dto.domain.ImageDto;
+import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.entity.ImageEntity;
 import com.sellio.model.enums.ImageType;
 import org.mapstruct.AfterMapping;
@@ -17,13 +17,13 @@ public interface ImageMapper {
     @Mapping(target = "secureUrl", expression = "java((String) json.get(\"secure_url\"))")
     @Mapping(target = "format", expression = "java((String) json.get(\"format\"))")
     @Mapping(target = "bytes", expression = "java((Number) json.get(\"bytes\"))")
-    ImageDto toCloudinaryUploadResponse(Map<String, Object> json);
+    ImageResponse toCloudinaryUploadResponse(Map<String, Object> json);
 
     @Mapping(target = "publicId", ignore = true)
-    ImageEntity toEntity(ImageDto imageDto);
+    ImageEntity toEntity(ImageResponse imageResponse);
 
     @AfterMapping
-    default void afterMapping(ImageDto source, @MappingTarget ImageEntity target) {
+    default void afterMapping(ImageResponse source, @MappingTarget ImageEntity target) {
         if (source.getPublicId() != null) {
             String publicId = source.getPublicId();
             target.setPublicId(publicId);

@@ -1,15 +1,13 @@
-package com.sellio.model.dto.domain;
+package com.sellio.model.dto.response.core;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class AddressDto {
+public class AddressResponse {
     private String placeId;
     private String country;
     private String city;
