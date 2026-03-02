@@ -76,4 +76,11 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepository.save(customerEntity);
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer updated successfully");
     }
+
+    @Override
+    public void deleteCustomerById(UUID id) {
+        CustomerEntity customerEntity = customerRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        customerRepository.delete(customerEntity);
+    }
 }

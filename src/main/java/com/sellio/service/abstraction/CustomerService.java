@@ -14,4 +14,6 @@ public interface CustomerService extends UserService {
     DataResult<CustomerDetailsResponse> getCustomerById(UUID id);
 
     DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request);
+
+    void deleteCustomerById(UUID id);
 }

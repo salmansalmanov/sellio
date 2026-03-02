@@ -5,6 +5,8 @@ import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
+import com.sellio.model.result.Result;
+import com.sellio.model.result.SuccessResult;
 import com.sellio.service.abstraction.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -61,5 +63,17 @@ public class CustomerController {
             @RequestBody @Valid CustomerUpdateRequest request
     ) {
         return new ResponseEntity<>(customerService.updateCustomerById(id, request), HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{id}")
+    @Operation(
+            summary = "Delete customer by ID",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<Result> deleteCustomerById(@PathVariable UUID id) {
+        customerService.deleteCustomerById(id);
+        return new ResponseEntity<>(new SuccessResult("Customer deleted successfully"), HttpStatus.OK);
     }
 }
