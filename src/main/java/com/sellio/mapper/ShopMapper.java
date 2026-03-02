@@ -1,6 +1,7 @@
 package com.sellio.mapper;
 
 import com.sellio.model.dto.request.ShopRegisterRequest;
+import com.sellio.model.dto.request.ShopUpdateRequest;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.entity.ShopAddressEntity;
@@ -59,4 +60,6 @@ public interface ShopMapper {
                 .map(this::toResponse)
                 .toList();
     }
+
+    ShopEntity updateRequestToEntity(ShopUpdateRequest request, @MappingTarget ShopEntity shopEntity);
 }

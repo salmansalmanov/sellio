@@ -1,5 +1,6 @@
 package com.sellio.controller;
 
+import com.sellio.model.dto.request.ShopUpdateRequest;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.result.DataResult;
@@ -9,8 +10,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -34,5 +37,19 @@ public class ShopController {
     @Operation(summary = "Get shop by ID")
     public ResponseEntity<DataResult<ShopDetailsResponse>> getShopById(@PathVariable UUID id) {
         return new ResponseEntity<>(shopService.getShopById(id), HttpStatus.OK);
+    }
+
+    @Operation(summary = "Update shop by ID")
+    @PutMapping(
+            value = "/{id}",
+            consumes = MediaType.MULTIPART_FORM_DATA_VALUE
+    )
+    public ResponseEntity<DataResult<ShopDetailsResponse>> updateShopById(
+            @PathVariable UUID id,
+            @RequestPart("data") ShopUpdateRequest shopUpdateRequest,
+            @RequestPart(value = "logo", required = false) MultipartFile logo,
+            @RequestPart(value = "banner", required = false) MultipartFile banner
+    ) {
+        return new ResponseEntity<>(shopService.updateShopById(id, shopUpdateRequest, logo, banner), HttpStatus.OK);
     }
 }

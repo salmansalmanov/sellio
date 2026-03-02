@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 public interface UserRepository extends JpaRepository<UserEntity, UUID> {
@@ -14,5 +15,5 @@ public interface UserRepository extends JpaRepository<UserEntity, UUID> {
     boolean existsByPhoneNumber(String phoneNumber);
 
     @Query("SELECT COUNT(u) > 0 FROM UserEntity u JOIN u.phoneNumbers p WHERE p IN :phoneNumbers")
-    boolean existsByPhoneNumbers(List<String> phoneNumbers);
+    boolean existsByPhoneNumbers(Set<String> phoneNumbers);
 }

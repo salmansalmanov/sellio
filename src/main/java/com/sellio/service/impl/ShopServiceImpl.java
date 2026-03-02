@@ -7,6 +7,7 @@ import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.domain.ImageDto;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
+import com.sellio.model.dto.request.ShopUpdateRequest;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
@@ -26,6 +27,7 @@ import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -49,6 +51,7 @@ public class ShopServiceImpl implements ShopService {
     private final FileUtil fileUtil;
     private final ShopRepository shopRepository;
     private final RedisTemplate<String, String> redisTemplate;
+    private final UserUtil userUtil;
 
     @Override
     @Transactional
@@ -113,6 +116,20 @@ public class ShopServiceImpl implements ShopService {
         return new SuccessDataResult<>(shopDetailsResponse, "Shop found successfully");
     }
 
+    @Override
+    public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) {
+        userUtil.checkShop(request);
+        ShopEntity shopEntity = shopRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+
+        shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
+        shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
+        shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
+        initializeAddresses(shopEntity, request.getPlaceIds());
+
+        return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
+    }
+
     private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
         ImageEntity imageEntity = null;
         if (file != null) {
@@ -127,7 +144,7 @@ public class ShopServiceImpl implements ShopService {
         return imageEntity;
     }
 
-    private void initializeAddresses(ShopEntity shopEntity, List<String> placeIds) {
+    private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {
         if (shopEntity.getAddresses() == null) {
             shopEntity.setAddresses(new ArrayList<>());
         }
