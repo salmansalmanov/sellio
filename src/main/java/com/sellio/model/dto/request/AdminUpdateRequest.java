@@ -1,6 +1,5 @@
 package com.sellio.model.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -11,13 +10,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AdminUpdateRequest {
-
-    @NotBlank(message = "First name must not be blank")
     private String firstName;
-
-    @NotBlank(message = "Last name must not be blank")
     private String lastName;
-
-    @NotBlank(message = "Username must not be blank")
     private String username;
 }
