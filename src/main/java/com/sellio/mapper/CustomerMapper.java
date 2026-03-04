@@ -10,7 +10,9 @@ import com.sellio.model.enums.UserStatus;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Component
 public class CustomerMapper {
@@ -20,7 +22,7 @@ public class CustomerMapper {
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .password(request.getPassword())
-                .phoneNumbers(List.of(request.getPhoneNumber()))
+                .phoneNumbers(Set.of(request.getPhoneNumber()))
                 .pricingPlan(request.getPricingPlan())
                 .status(UserStatus.PENDING)
                 .role(Role.CUSTOMER)
@@ -28,11 +30,18 @@ public class CustomerMapper {
     }
 
     public CustomerDetailsResponse toDetailsResponse(CustomerEntity entity) {
+        Set<String> phones = entity.getPhoneNumbers();
+        String phoneNumber = null;
+        for (String phone : phones) {
+            if (phone != null) {
+                phoneNumber = phone;
+            }
+        }
         return CustomerDetailsResponse.builder()
                 .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
-                .phoneNumber(entity.getPhoneNumbers().getFirst())
+                .phoneNumber(phoneNumber)
                 .status(entity.getStatus())
                 .role(entity.getRole())
                 .build();
@@ -60,7 +69,7 @@ public class CustomerMapper {
             entity.setLastName(request.getLastName());
         }
         if (request.getPhoneNumber() != null) {
-            List<String> phoneNumbers = new ArrayList<>();
+            Set<String> phoneNumbers = new HashSet<>();
             phoneNumbers.add(request.getPhoneNumber());
             entity.setPhoneNumbers(phoneNumbers);
         }
