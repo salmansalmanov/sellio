@@ -3,7 +3,7 @@ package com.sellio.service.impl;
 import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ImageMapper;
-import com.sellio.mapper.my.ShopMapper;
+import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;

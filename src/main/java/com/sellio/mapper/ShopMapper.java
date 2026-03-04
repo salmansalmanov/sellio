@@ -6,60 +6,89 @@ import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import com.sellio.model.enums.Role;
+import com.sellio.model.enums.UserStatus;
+import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.List;
 
-@Mapper(componentModel = "spring")
-public interface ShopMapper {
+@Component
+public class ShopMapper {
+    public ShopEntity registerRequestToEntity(ShopRegisterRequest request) {
+        return ShopEntity.builder()
+                .name(request.getName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .description(request.getDescription())
+                .pricingPlan(request.getPricingPlan())
+                .phoneNumbers(request.getPhoneNumbers())
+                .role(Role.SHOP)
+                .status(UserStatus.PENDING)
+                .build();
+    }
 
-    @Mapping(target = "status", constant = "PENDING")
-    @Mapping(target = "role", constant = "SHOP")
-    ShopEntity toEntity(ShopRegisterRequest shopRegisterRequest);
+    public ShopDetailsResponse toDetailsResponse(ShopEntity entity) {
+        ShopDetailsResponse response = new ShopDetailsResponse();
 
-    @Mapping(target = "addresses", ignore = true)
-    ShopDetailsResponse toDetailsResponse(ShopEntity shopEntity);
+        response.setId(entity.getId());
+        response.setName(entity.getName());
+        response.setEmail(entity.getEmail());
+        response.setDescription(entity.getDescription());
+        response.setPricingPlan(entity.getPricingPlan());
+        response.setPhoneNumbers(entity.getPhoneNumbers());
+        response.setRole(entity.getRole());
+        response.setStatus(entity.getStatus());
 
-    @AfterMapping
-    default void afterMapping(ShopEntity source, @MappingTarget ShopDetailsResponse target) {
-        if (source.getLogo() != null) {
-            target.setLogoUrl(source.getLogo().getSecureUrl());
+        if (entity.getLogo() != null) {
+            response.setLogoUrl(entity.getLogo().getSecureUrl());
         }
 
-        if (source.getBanner() != null) {
-            target.setBannerUrl(source.getBanner().getSecureUrl());
+        if (entity.getBanner() != null) {
+            response.setBannerUrl(entity.getBanner().getSecureUrl());
         }
 
-        if (source.getAddresses() != null) {
-            target.setAddresses(new ArrayList<>());
-            for (ShopAddressEntity shopAddressEntity : source.getAddresses()) {
+        if (entity.getAddresses() != null) {
+            for (ShopAddressEntity shopAddressEntity : entity.getAddresses()) {
                 if (shopAddressEntity != null) {
-                    target.getAddresses().add(shopAddressEntity.getAddress().getFullAddress());
+                    response.getAddresses().add(shopAddressEntity.getAddress().getFullAddress());
                 }
             }
         }
+        return response;
     }
 
-    ShopResponse toResponse(ShopEntity shopEntity);
+    public ShopResponse toResponse(ShopEntity entity) {
+        ShopResponse response = new ShopResponse();
+        response.setId(entity.getId());
+        response.setName(entity.getName());
+        response.setDescription(entity.getDescription());
+        response.setPhoneNumbers(entity.getPhoneNumbers());
 
-    @AfterMapping
-    default void afterMapping(ShopEntity source, @MappingTarget ShopResponse target) {
-        if (source.getLogo() != null) {
-            target.setLogoUrl(source.getLogo().getSecureUrl());
+        if (entity.getLogo() != null) {
+            response.setLogoUrl(entity.getLogo().getSecureUrl());
         } else {
-            target.setLogoUrl(null);
+            response.setLogoUrl(null);
         }
+
+        return response;
     }
 
-    default List<ShopResponse> toResponses(List<ShopEntity> shopEntities) {
-        return shopEntities.stream()
+    public List<ShopResponse> toResponses(List<ShopEntity> entities) {
+        return entities.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    ShopEntity updateRequestToEntity(ShopUpdateRequest request, @MappingTarget ShopEntity shopEntity);
+    public ShopEntity updateRequestToEntity(ShopUpdateRequest request, ShopEntity entity) {
+        if (request.getName() != null) {
+            entity.setName(request.getName());
+        }
+        if (request.getDescription() != null) {
+            entity.setDescription(request.getDescription());
+        }
+        if (request.getPhoneNumbers() != null) {
+            entity.setPhoneNumbers(request.getPhoneNumbers());
+        }
+        return entity;
+    }
 }
