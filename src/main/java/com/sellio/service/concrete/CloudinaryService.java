@@ -18,10 +18,10 @@ public class CloudinaryService {
     private final Cloudinary cloudinary;
 
     @SuppressWarnings("unchecked")
-    public Map<String, Object> upload(MultipartFile file, String folder, String fileName) {
-        if (file == null) return null;
+    public Map<String, Object> upload(byte[] fileBytes, String folder, String fileName) {
+        if (fileBytes == null) return null;
         try {
-            return (Map<String, Object>) cloudinary.uploader().upload(file.getBytes(),
+            return (Map<String, Object>) cloudinary.uploader().upload(fileBytes,
                     ObjectUtils.asMap(
                             "folder", folder,
                             "public_id", fileName,
