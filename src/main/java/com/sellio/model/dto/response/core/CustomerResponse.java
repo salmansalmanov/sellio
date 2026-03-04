@@ -1,15 +1,13 @@
 package com.sellio.model.dto.response.core;
 
 import com.sellio.model.enums.UserStatus;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.UUID;
 
 @Setter
 @Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerResponse {

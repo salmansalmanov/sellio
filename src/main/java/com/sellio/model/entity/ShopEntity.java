@@ -5,12 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Setter
 @Getter
 @Entity
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "shops")
@@ -43,5 +46,5 @@ public class ShopEntity extends UserEntity {
             orphanRemoval = true,
             mappedBy = "shop"
     )
-    private List<ShopAddressEntity> addresses;
+    private List<ShopAddressEntity> addresses = new ArrayList<>();
 }

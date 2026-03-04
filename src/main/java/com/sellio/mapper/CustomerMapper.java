@@ -5,58 +5,74 @@ import com.sellio.model.dto.request.CustomerUpdateRequest;
 import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.entity.CustomerEntity;
-import org.mapstruct.AfterMapping;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
-import org.mapstruct.MappingTarget;
+import com.sellio.model.enums.Role;
+import com.sellio.model.enums.UserStatus;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Set;
 
-@Mapper(componentModel = "spring")
-public interface CustomerMapper {
+@Component
+public class CustomerMapper {
+    public CustomerEntity registerRequestToEntity(CustomerRegisterRequest request) {
+        return CustomerEntity.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .password(request.getPassword())
+                .phoneNumbers(Set.of(request.getPhoneNumber()))
+                .pricingPlan(request.getPricingPlan())
+                .status(UserStatus.PENDING)
+                .role(Role.CUSTOMER)
+                .build();
+    }
 
-    @Mapping(target = "role", constant = "CUSTOMER")
-    @Mapping(target = "status", constant = "PENDING")
-    @Mapping(target = "phoneNumbers", source = "phoneNumber")
-    CustomerEntity toEntity(CustomerRegisterRequest customerRegisterRequest);
-
-    @Mapping(target = "phoneNumber", source = "phoneNumbers")
-    CustomerDetailsResponse toDetailsResponse(CustomerEntity customerEntity);
-
-    default List<String> map(String phoneNumber) {
-        if (phoneNumber == null) {
-            return new ArrayList<>();
+    public CustomerDetailsResponse toDetailsResponse(CustomerEntity entity) {
+        Set<String> phones = entity.getPhoneNumbers();
+        String phoneNumber = null;
+        for (String phone : phones) {
+            if (phone != null) {
+                phoneNumber = phone;
+            }
         }
-        return List.of(phoneNumber);
+        return CustomerDetailsResponse.builder()
+                .id(entity.getId())
+                .firstName(entity.getFirstName())
+                .lastName(entity.getLastName())
+                .phoneNumber(phoneNumber)
+                .status(entity.getStatus())
+                .role(entity.getRole())
+                .build();
     }
 
-    default String map(List<String> phoneNumbers) {
-        if (phoneNumbers == null) {
-            return null;
-        }
-        return phoneNumbers.getFirst();
+    public CustomerResponse toResponse(CustomerEntity entity) {
+        return CustomerResponse.builder()
+                .id(entity.getId())
+                .fullName(entity.getFirstName() + " " + entity.getLastName())
+                .status(entity.getStatus())
+                .build();
     }
 
-    CustomerResponse toResponse(CustomerEntity customerEntity);
-
-    @AfterMapping
-    default void afterMapping(CustomerEntity source, @MappingTarget CustomerResponse target) {
-        target.setFullName(source.getFirstName() + " " + source.getLastName());
-    }
-
-    default List<CustomerResponse> toResponses(List<CustomerEntity> entities) {
+    public List<CustomerResponse> toResponses(List<CustomerEntity> entities) {
         return entities.stream()
                 .map(this::toResponse)
                 .toList();
     }
 
-    CustomerEntity updateRequestToEntity(CustomerUpdateRequest request, @MappingTarget CustomerEntity customerEntity);
-
-    @AfterMapping
-    default void afterMapping(CustomerUpdateRequest source, @MappingTarget CustomerEntity target) {
-        target.setPhoneNumbers(new ArrayList<>());
-        target.getPhoneNumbers().add(source.getPhoneNumber());
+    public CustomerEntity updateRequestToEntity(CustomerUpdateRequest request, CustomerEntity entity) {
+        if (request.getFirstName() != null) {
+            entity.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            entity.setLastName(request.getLastName());
+        }
+        if (request.getPhoneNumber() != null) {
+            Set<String> phoneNumbers = new HashSet<>();
+            phoneNumbers.add(request.getPhoneNumber());
+            entity.setPhoneNumbers(phoneNumbers);
+        }
+        return entity;
     }
 }

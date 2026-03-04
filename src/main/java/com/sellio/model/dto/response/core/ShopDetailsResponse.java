@@ -5,12 +5,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Setter
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 public class ShopDetailsResponse extends UserResponse {
@@ -19,9 +23,9 @@ public class ShopDetailsResponse extends UserResponse {
     private String email;
     private String description;
     private PricingPlan pricingPlan;
-    private List<String> phoneNumbers;
+    private Set<String> phoneNumbers;
     private String logoUrl;
     private String bannerUrl;
-    private List<String> addresses;
+    private List<String> addresses = new ArrayList<>();
     private Long viewCount = 0L;
 }

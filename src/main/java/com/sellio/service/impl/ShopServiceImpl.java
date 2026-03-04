@@ -3,8 +3,8 @@ package com.sellio.service.impl;
 import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ImageMapper;
-import com.sellio.mapper.ShopMapper;
-import com.sellio.model.dto.domain.ImageDto;
+import com.sellio.mapper.my.ShopMapper;
+import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
 import com.sellio.model.dto.request.ShopUpdateRequest;
@@ -58,7 +58,7 @@ public class ShopServiceImpl implements ShopService {
     @CleanupCloudinary
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
-        ShopEntity shopEntity = shopMapper.toEntity(shopRegisterRequest);
+        ShopEntity shopEntity = shopMapper.registerRequestToEntity(shopRegisterRequest);
 
         shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
         shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
@@ -122,9 +122,12 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
-        shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
-        shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
-        shopEntity.setAddresses(new ArrayList<>());
+        if (logo != null) {
+            shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
+        }
+        if (banner != null) {
+            shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
+        }
         initializeAddresses(shopEntity, request.getPlaceIds());
         shopRepository.save(shopEntity);
 
@@ -146,7 +149,7 @@ public class ShopServiceImpl implements ShopService {
                 String folder = "shops/" + shopEntity.getName();
                 String newFileName = imageType.name() + "-" + UUID.randomUUID();
                 Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
-                ImageDto cloudinaryUploadResponse = imageMapper.toCloudinaryUploadResponse(cloudinaryUploadResponseData);
+                ImageResponse cloudinaryUploadResponse = imageMapper.toResponse(cloudinaryUploadResponseData);
                 imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
             }
         }
@@ -154,11 +157,10 @@ public class ShopServiceImpl implements ShopService {
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {
-        if (shopEntity.getAddresses() == null) {
-            shopEntity.setAddresses(new ArrayList<>());
+        if (placeIds == null) {
+            return;
         }
-        if (placeIds == null) return;
-
+        shopEntity.setAddresses(new ArrayList<>());
         for (String placeId : placeIds) {
             AddressEntity addressEntity = addressService.save(placeId);
 

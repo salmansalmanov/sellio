@@ -11,13 +11,7 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CustomerUpdateRequest {
-
-    @NotBlank(message = "First name must not be blank")
     private String firstName;
-
-    @NotBlank(message = "Last name must not be blank")
     private String lastName;
-
-    @NotBlank(message = "Phone number must not be blank")
     private String phoneNumber;
 }

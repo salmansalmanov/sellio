@@ -49,7 +49,7 @@ public class AdminServiceImpl implements AdminService {
         String key = "invite_" + registerRequest.getEmail();
 
         if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
-            AdminEntity entity = adminMapper.toEntity(adminRegisterRequest);
+            AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
             entity.setStatus(UserStatus.ACTIVE);
             AdminEntity savedEntity = userRepository.save(entity);
             redisTemplate.delete(key);

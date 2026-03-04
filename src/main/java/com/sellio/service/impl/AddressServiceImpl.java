@@ -1,7 +1,7 @@
 package com.sellio.service.impl;
 
 import com.sellio.mapper.AddressMapper;
-import com.sellio.model.dto.domain.AddressDto;
+import com.sellio.model.dto.response.core.AddressResponse;
 import com.sellio.model.entity.AddressEntity;
 import com.sellio.repository.AddressRepository;
 import com.sellio.service.abstraction.AddressService;
@@ -20,8 +20,8 @@ public class AddressServiceImpl implements AddressService {
     public AddressEntity save(String placeId) {
         return addressRepository.findByPlaceId(placeId)
                 .orElseGet(() -> {
-                    AddressDto addressDto = googleMapsService.getAddressByPlaceId(placeId);
-                    return addressMapper.toEntity(addressDto);
+                    AddressResponse addressResponse = googleMapsService.getAddressByPlaceId(placeId);
+                    return addressMapper.toEntity(addressResponse);
                 });
     }
 }

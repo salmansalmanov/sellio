@@ -6,6 +6,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @Setter
@@ -17,6 +18,6 @@ public class ShopResponse {
     private String name;
     private String logoUrl;
     private String description;
-    private List<String> phoneNumbers;
+    private Set<String> phoneNumbers;
     private Long viewCount = 0L;
 }

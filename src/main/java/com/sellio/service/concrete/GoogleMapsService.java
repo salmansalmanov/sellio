@@ -2,8 +2,8 @@ package com.sellio.service.concrete;
 
 import com.sellio.exception.custom.GoogleMapsException;
 import com.sellio.mapper.AddressMapper;
-import com.sellio.model.dto.domain.AddressDto;
 import com.sellio.model.dto.response.client.GoogleMapsPlaceResponse;
+import com.sellio.model.dto.response.core.AddressResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -19,12 +19,8 @@ public class GoogleMapsService {
     @Value("${spring.google.maps.api-key}")
     private String apiKey;
 
-    private static final String BASE_URL = "https://places.googleapis.com/v1/places/";
-
-    public AddressDto getAddressByPlaceId(String placeId) {
+    public AddressResponse getAddressByPlaceId(String placeId) {
         try {
-            String fieldMask = "id,formattedAddress,location,addressComponents";
-
             GoogleMapsPlaceResponse response = webClient.get()
                     .uri(uriBuilder -> uriBuilder
                             .path("/{placeId}")
@@ -40,7 +36,7 @@ public class GoogleMapsService {
                 throw new GoogleMapsException("Google Maps response is null");
             }
 
-            return addressMapper.toDto(response);
+            return addressMapper.toResponse(response);
         } catch (Exception e) {
             throw new GoogleMapsException("Google Maps exception: " + e.getMessage());
         }
