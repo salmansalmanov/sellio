@@ -12,6 +12,9 @@ public class FileUtil {
     private static final long MAX_SIZE = 5 * 1024 * 1024;
 
     public boolean isValidImage(MultipartFile file) {
+        if (file == null) {
+            return false;
+        }
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
             return false;

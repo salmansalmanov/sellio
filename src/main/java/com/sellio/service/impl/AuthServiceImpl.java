@@ -13,6 +13,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -20,7 +22,7 @@ public class AuthServiceImpl implements AuthService {
     private final UserServiceFactory userServiceFactory;
 
     @Override
-    public DataResult<UserResponse> register(RegisterRequest registerRequest, String role, MultipartFile logo, MultipartFile banner) {
+    public DataResult<UserResponse> register(RegisterRequest registerRequest, String role, MultipartFile logo, MultipartFile banner) throws IOException {
         userUtil.checkUser(registerRequest);
         Role roleEnum;
         try {

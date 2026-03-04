@@ -5,6 +5,8 @@ import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.result.DataResult;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 public interface AuthService {
-    DataResult<UserResponse> register(RegisterRequest registerRequest, String role, MultipartFile logo, MultipartFile banner);
+    DataResult<UserResponse> register(RegisterRequest registerRequest, String role, MultipartFile logo, MultipartFile banner) throws IOException;
 }

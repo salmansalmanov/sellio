@@ -1,13 +1,14 @@
 package com.sellio.service.impl;
 
 import com.sellio.aop.annotation.CleanupCloudinary;
+import com.sellio.event.ShopImageUploadEvent;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ImageMapper;
 import com.sellio.mapper.ShopMapper;
-import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
 import com.sellio.model.dto.request.ShopUpdateRequest;
+import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
@@ -24,11 +25,12 @@ import com.sellio.repository.ShopRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
 import com.sellio.service.abstraction.ShopService;
+import com.sellio.service.concrete.AsyncImageService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
-import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -37,7 +39,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.*;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -51,22 +57,34 @@ public class ShopServiceImpl implements ShopService {
     private final FileUtil fileUtil;
     private final ShopRepository shopRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final UserUtil userUtil;
+    private final AsyncImageService asyncImageService;
+    private final ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
     @CleanupCloudinary
-    public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
+    public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) throws IOException {
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
         ShopEntity shopEntity = shopMapper.registerRequestToEntity(shopRegisterRequest);
 
-        shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
-        shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
         initializeAddresses(shopEntity, shopRegisterRequest.getPlaceIds());
-
         shopEntity.setStatus(UserStatus.ACTIVE);
+
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
+
+        if (fileUtil.isValidImage(logo)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(savedEntity.getId(), logo.getBytes(), ImageType.LOGO)
+            );
+        }
+
+        if (fileUtil.isValidImage(banner)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER)
+            );
+        }
+
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
 
@@ -117,20 +135,25 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) {
+    @Transactional
+    public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) throws IOException {
         ShopEntity shopEntity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
-        if (logo != null) {
-            shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
-        }
-        if (banner != null) {
-            shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
-        }
         initializeAddresses(shopEntity, request.getPlaceIds());
-        shopRepository.save(shopEntity);
+        if (fileUtil.isValidImage(logo)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(shopEntity.getId(), logo.getBytes(), ImageType.LOGO)
+            );
+        }
 
+        if (fileUtil.isValidImage(banner)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(shopEntity.getId(), banner.getBytes(), ImageType.BANNER)
+            );
+        }
+        shopRepository.save(shopEntity);
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
@@ -138,29 +161,15 @@ public class ShopServiceImpl implements ShopService {
     public void deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
-        cloudinaryService.forceRemoveFolder("shops/" + entity.getName());
+        cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
-    }
-
-    private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) {
-        ImageEntity imageEntity = null;
-        if (file != null) {
-            if (fileUtil.isValidImage(file)) {
-                String folder = "shops/" + shopEntity.getName();
-                String newFileName = imageType.name() + "-" + UUID.randomUUID();
-                Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file, folder, newFileName);
-                ImageResponse cloudinaryUploadResponse = imageMapper.toResponse(cloudinaryUploadResponseData);
-                imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
-            }
-        }
-        return imageEntity;
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {
         if (placeIds == null) {
             return;
         }
-        shopEntity.setAddresses(new ArrayList<>());
+        shopEntity.getAddresses().clear();
         for (String placeId : placeIds) {
             AddressEntity addressEntity = addressService.save(placeId);
 

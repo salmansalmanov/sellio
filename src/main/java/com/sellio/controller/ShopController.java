@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.UUID;
 
 @RestController
@@ -52,7 +53,7 @@ public class ShopController {
             @RequestPart("data") @Valid ShopUpdateRequest shopUpdateRequest,
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner
-    ) {
+    ) throws IOException {
         return new ResponseEntity<>(shopService.updateShopById(id, shopUpdateRequest, logo, banner), HttpStatus.OK);
     }
 

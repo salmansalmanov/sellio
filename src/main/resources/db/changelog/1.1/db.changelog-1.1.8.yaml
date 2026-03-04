@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.8-add-status-column-to-images
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: images
+            columns:
+              - column:
+                  name: status
+                  type: VARCHAR
+                  constraints:
+                    nullable: false

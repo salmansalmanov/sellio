@@ -15,6 +15,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/v1/auth")
@@ -37,7 +39,7 @@ public class AuthController {
             @RequestPart(value = "logo", required = false) MultipartFile logo,
             @RequestPart(value = "banner", required = false) MultipartFile banner,
             @RequestParam String role
-    ) {
+    ) throws IOException {
         return new ResponseEntity<>(authService.register(request, role, logo, banner), HttpStatus.CREATED);
     }
 }

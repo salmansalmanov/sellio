@@ -1,0 +1,14 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.2.0-add-version-column-to-shops
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: users
+            columns:
+              - column:
+                  name: version
+                  type: BIGINT
+                  defaultValueComputed: "0::bigint"
+                  constraints:
+                    nullable: false
