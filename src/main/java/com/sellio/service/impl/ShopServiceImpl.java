@@ -64,8 +64,6 @@ public class ShopServiceImpl implements ShopService {
     @Transactional
     @CleanupCloudinary
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) throws IOException {
-        fileUtil.isValidImage(logo);
-        fileUtil.isValidImage(banner);
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
         ShopEntity shopEntity = shopMapper.registerRequestToEntity(shopRegisterRequest);
 
@@ -75,13 +73,17 @@ public class ShopServiceImpl implements ShopService {
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
 
-        eventPublisher.publishEvent(
-                new ShopImageUploadEvent(
-                        savedEntity.getId(),
-                        logo != null ? logo.getBytes() : null,
-                        banner != null ? banner.getBytes() : null
-                )
-        );
+        if (fileUtil.isValidImage(logo)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(savedEntity.getId(), logo.getBytes(), ImageType.LOGO)
+            );
+        }
+
+        if (fileUtil.isValidImage(banner)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER)
+            );
+        }
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
@@ -133,20 +135,25 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @Transactional
     public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) throws IOException {
         ShopEntity shopEntity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
-        if (logo != null) {
-            shopEntity.setLogo(initializeImage(shopEntity, logo, ImageType.LOGO));
-        }
-        if (banner != null) {
-            shopEntity.setBanner(initializeImage(shopEntity, banner, ImageType.BANNER));
-        }
         initializeAddresses(shopEntity, request.getPlaceIds());
-        shopRepository.save(shopEntity);
+        if (fileUtil.isValidImage(logo)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(shopEntity.getId(), logo.getBytes(), ImageType.LOGO)
+            );
+        }
 
+        if (fileUtil.isValidImage(banner)) {
+            eventPublisher.publishEvent(
+                    new ShopImageUploadEvent(shopEntity.getId(), banner.getBytes(), ImageType.BANNER)
+            );
+        }
+        shopRepository.save(shopEntity);
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
@@ -154,29 +161,15 @@ public class ShopServiceImpl implements ShopService {
     public void deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
-        cloudinaryService.forceRemoveFolder("shops/" + entity.getName());
+        cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
-    }
-
-    private ImageEntity initializeImage(ShopEntity shopEntity, MultipartFile file, ImageType imageType) throws IOException {
-        ImageEntity imageEntity = null;
-        if (file != null) {
-            if (fileUtil.isValidImage(file)) {
-                String folder = "shops/" + shopEntity.getId();
-                String newFileName = imageType.name();
-                Map<String, Object> cloudinaryUploadResponseData = cloudinaryService.upload(file.getBytes(), folder, newFileName);
-                ImageResponse cloudinaryUploadResponse = imageMapper.toResponse(cloudinaryUploadResponseData);
-                imageEntity = imageMapper.toEntity(cloudinaryUploadResponse);
-            }
-        }
-        return imageEntity;
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {
         if (placeIds == null) {
             return;
         }
-        shopEntity.setAddresses(new ArrayList<>());
+        shopEntity.getAddresses().clear();
         for (String placeId : placeIds) {
             AddressEntity addressEntity = addressService.save(placeId);
 

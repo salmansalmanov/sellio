@@ -13,7 +13,7 @@ public class FileUtil {
 
     public boolean isValidImage(MultipartFile file) {
         if (file == null) {
-            return true;
+            return false;
         }
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
