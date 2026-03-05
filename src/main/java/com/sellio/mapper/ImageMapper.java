@@ -18,14 +18,14 @@ public class ImageMapper {
                 .build();
     }
 
-    public ImageEntity toEntity(ImageResponse response) {
+    public ImageEntity toEntity(ImageResponse response, ImageType imageType) {
         return ImageEntity.builder()
                 .fileName(response.getPublicId().substring(response.getPublicId().lastIndexOf('/') + 1))
                 .publicId(response.getPublicId())
                 .secureUrl(response.getSecureUrl())
                 .format(response.getFormat())
                 .size(response.getBytes().longValue())
-                .type(ImageType.LOGO)
+                .type(imageType)
                 .build();
     }
 }

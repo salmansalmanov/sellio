@@ -3,17 +3,14 @@ package com.sellio.service.impl;
 import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.event.ShopImageUploadEvent;
 import com.sellio.exception.custom.ResourceNotFoundException;
-import com.sellio.mapper.ImageMapper;
 import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.request.RegisterRequest;
 import com.sellio.model.dto.request.ShopRegisterRequest;
 import com.sellio.model.dto.request.ShopUpdateRequest;
-import com.sellio.model.dto.response.core.ImageResponse;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AddressEntity;
-import com.sellio.model.entity.ImageEntity;
 import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
 import com.sellio.model.enums.ImageType;
@@ -25,7 +22,6 @@ import com.sellio.repository.ShopRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
 import com.sellio.service.abstraction.ShopService;
-import com.sellio.service.concrete.AsyncImageService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
@@ -40,8 +36,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,14 +44,12 @@ import java.util.UUID;
 public class ShopServiceImpl implements ShopService {
     private final ShopMapper shopMapper;
     private final CloudinaryService cloudinaryService;
-    private final ImageMapper imageMapper;
     private final UserRepository userRepository;
     private final MailService mailService;
     private final AddressService addressService;
     private final FileUtil fileUtil;
     private final ShopRepository shopRepository;
     private final RedisTemplate<String, String> redisTemplate;
-    private final AsyncImageService asyncImageService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
@@ -154,6 +146,7 @@ public class ShopServiceImpl implements ShopService {
             );
         }
         shopRepository.save(shopEntity);
+        mailService.sendUpdateEmail(shopEntity.getEmail());
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
@@ -163,6 +156,7 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
         cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
+        mailService.sendDeleteEmail(entity.getEmail());
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {

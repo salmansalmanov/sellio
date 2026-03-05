@@ -9,6 +9,7 @@ import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -24,6 +25,7 @@ public class MailService {
     @Value("${spring.mail.username}")
     private String from;
 
+    @Async
     public void sendRegistrationMail(String to) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/registration.html");
@@ -43,6 +45,7 @@ public class MailService {
         }
     }
 
+    @Async
     public void sendAdminInvitationMail(String to, String token) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/admin-invitation.html");
@@ -54,6 +57,46 @@ public class MailService {
 
             helper.setTo(to);
             helper.setSubject("Admin Token");
+            helper.setFrom(from);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new MailException("Mail exception: " + e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendUpdateEmail(String to) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/update.html");
+            String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Hesabınız yeniləndi");
+            helper.setFrom(from);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new MailException("Mail exception: " + e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendDeleteEmail(String to) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/delete.html");
+            String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Hesabınız silindi");
             helper.setFrom(from);
             helper.setText(htmlContent, true);
 

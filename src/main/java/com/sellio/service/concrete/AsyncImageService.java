@@ -9,7 +9,6 @@ import com.sellio.model.entity.ShopEntity;
 import com.sellio.model.enums.ImageType;
 import com.sellio.repository.ImageRepository;
 import com.sellio.repository.ShopRepository;
-import com.sellio.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.scheduling.annotation.Async;
@@ -28,7 +27,6 @@ public class AsyncImageService {
     private final ShopRepository shopRepository;
     private final CloudinaryService cloudinaryService;
     private final ImageMapper imageMapper;
-    private final UserRepository userRepository;
     private final ImageRepository imageRepository;
 
     @Async("imageUploadExecutor")
@@ -40,12 +38,13 @@ public class AsyncImageService {
                     .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + event.getShopId()));
 
             ImageEntity imageEntity = upload(shopEntity, event.getFileBytes(), event.getImageType());
-            imageRepository.save(imageEntity);
+            ImageEntity persistedImageEntity = imageRepository.findByPublicId(imageEntity.getPublicId())
+                    .orElseGet(() -> imageRepository.save(imageEntity));
 
             if (event.getImageType() == ImageType.LOGO) {
-                shopRepository.updateLogo(event.getShopId(), imageEntity);
+                shopRepository.updateLogo(event.getShopId(), persistedImageEntity);
             } else if (event.getImageType() == ImageType.BANNER) {
-                shopRepository.updateBanner(event.getShopId(), imageEntity);
+                shopRepository.updateBanner(event.getShopId(), persistedImageEntity);
             }
             log.info("Image uploaded successfully");
         } catch (Exception ex) {
@@ -58,6 +57,6 @@ public class AsyncImageService {
         String fileName = imageType.name();
         Map<String, Object> cloudinaryResponse = cloudinaryService.upload(fileBytes, folder, fileName);
         ImageResponse imageResponse = imageMapper.toResponse(cloudinaryResponse);
-        return imageMapper.toEntity(imageResponse);
+        return imageMapper.toEntity(imageResponse, imageType);
     }
 }
