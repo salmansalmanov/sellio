@@ -1,10 +1,7 @@
 package com.sellio.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
@@ -46,5 +43,6 @@ public class ShopEntity extends UserEntity {
             orphanRemoval = true,
             mappedBy = "shop"
     )
+    @Builder.Default
     private List<ShopAddressEntity> addresses = new ArrayList<>();
 }

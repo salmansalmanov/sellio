@@ -20,7 +20,6 @@ import com.sellio.repository.AdminRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
 import com.sellio.service.concrete.MailService;
-import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -41,7 +40,6 @@ public class AdminServiceImpl implements AdminService {
     private final MailService mailService;
     private final AdminMapper adminMapper;
     private final AdminRepository adminRepository;
-    private final UserUtil userUtil;
 
     @Override
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
@@ -103,7 +101,7 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         entity = adminMapper.updateRequestToEntity(request, entity);
         adminRepository.save(entity);
-
+        mailService.sendUpdateEmail(entity.getEmail());
         return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
     }
 
@@ -112,5 +110,6 @@ public class AdminServiceImpl implements AdminService {
         AdminEntity entity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         adminRepository.delete(entity);
+        mailService.sendDeleteEmail(entity.getEmail());
     }
 }
