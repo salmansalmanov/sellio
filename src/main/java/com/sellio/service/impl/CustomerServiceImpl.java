@@ -10,9 +10,7 @@ import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.CustomerEntity;
 import com.sellio.model.enums.UserStatus;
-import com.sellio.model.result.DataResult;
-import com.sellio.model.result.PageData;
-import com.sellio.model.result.SuccessDataResult;
+import com.sellio.model.result.*;
 import com.sellio.repository.CustomerRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.CustomerService;
@@ -79,10 +77,11 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public void deleteCustomerById(UUID id) {
+    public Result deleteCustomerById(UUID id) {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
         customerRepository.delete(customerEntity);
         mailService.sendDeleteEmail(customerEntity.getEmail());
+        return new SuccessResult("Customer deleted successfully");
     }
 }

@@ -15,9 +15,7 @@ import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
 import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.UserStatus;
-import com.sellio.model.result.DataResult;
-import com.sellio.model.result.PageData;
-import com.sellio.model.result.SuccessDataResult;
+import com.sellio.model.result.*;
 import com.sellio.repository.ShopRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
@@ -151,12 +149,14 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    public void deleteShopById(UUID id) {
+    public Result deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
         cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
+        redisTemplate.delete(String.valueOf(entity.getId()));
         mailService.sendDeleteEmail(entity.getEmail());
+        return new SuccessResult("Shop deleted successfully");
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {

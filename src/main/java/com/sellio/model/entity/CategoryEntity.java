@@ -4,10 +4,8 @@ import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +13,7 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "categories")
@@ -26,5 +25,6 @@ public class CategoryEntity extends BaseEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     private List<SubcategoryEntity> subcategories = new ArrayList<>();
 }

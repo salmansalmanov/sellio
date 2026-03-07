@@ -13,9 +13,7 @@ import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
 import com.sellio.model.enums.UserStatus;
-import com.sellio.model.result.DataResult;
-import com.sellio.model.result.PageData;
-import com.sellio.model.result.SuccessDataResult;
+import com.sellio.model.result.*;
 import com.sellio.repository.AdminRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
@@ -106,10 +104,11 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    public void deleteAdminById(UUID id) {
+    public Result deleteAdminById(UUID id) {
         AdminEntity entity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         adminRepository.delete(entity);
         mailService.sendDeleteEmail(entity.getEmail());
+        return new SuccessResult("Admin deleted successfully");
     }
 }
