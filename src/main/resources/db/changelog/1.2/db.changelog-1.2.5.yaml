@@ -1,0 +1,49 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.2.5-create-properties-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: properties
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: name
+                  type: VARCHAR
+                  constraints:
+                    nullable: false
+              - column:
+                  name: subcategory_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: properties
+            baseColumnNames: subcategory_id
+            referencedTableName: subcategories
+            referencedColumnNames: id
+            constraintName: properties_subcategory_id_subcategories_id
+        - addUniqueConstraint:
+            tableName: properties
+            columnNames: subcategory_id, name
+            constraintName: uk_properties_subcategory_id_name

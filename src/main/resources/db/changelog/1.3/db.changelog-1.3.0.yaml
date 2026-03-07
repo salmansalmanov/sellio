@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.3.0-add-listing_id-to-images
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: images
+            columns:
+              - column:
+                  name: listing_id
+                  type: UUID
+        - addForeignKeyConstraint:
+            baseTableName: images
+            baseColumnNames: listing_id
+            referencedTableName: listings
+            referencedColumnNames: id
+            constraintName: fk_images_listing_id_listings_id
