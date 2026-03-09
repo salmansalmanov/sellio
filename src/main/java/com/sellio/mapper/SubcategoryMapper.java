@@ -6,13 +6,17 @@ import com.sellio.model.dto.response.core.SubcategoryDetailsResponse;
 import com.sellio.model.dto.response.core.SubcategoryResponse;
 import com.sellio.model.entity.CategoryEntity;
 import com.sellio.model.entity.SubcategoryEntity;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.UUID;
 
 @Component
+@RequiredArgsConstructor
 public class SubcategoryMapper {
+    private final PropertyMapper propertyMapper;
+
     public SubcategoryEntity createRequestToEntity(SubcategoryCreateRequest request, CategoryEntity categoryEntity) {
         return SubcategoryEntity.builder()
                 .name(request.getName())
@@ -26,6 +30,9 @@ public class SubcategoryMapper {
                 .name(entity.getName())
                 .categoryId(entity.getCategory().getId())
                 .categoryName(entity.getCategory().getName())
+                .properties(entity.getProperties().stream()
+                        .map(propertyMapper::toResponse)
+                        .toList())
                 .build();
     }
 
