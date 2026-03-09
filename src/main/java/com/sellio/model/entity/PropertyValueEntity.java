@@ -1,10 +1,8 @@
 package com.sellio.model.entity;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +10,7 @@ import java.util.List;
 @Entity
 @Setter
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(
@@ -32,8 +31,10 @@ public class PropertyValueEntity extends BaseEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true
     )
+    @Builder.Default
     private List<PropertyDependencyEntity> children = new ArrayList<>();
 
     @OneToMany(mappedBy = "child")
+    @Builder.Default
     private List<PropertyDependencyEntity> parents = new ArrayList<>();
 }
