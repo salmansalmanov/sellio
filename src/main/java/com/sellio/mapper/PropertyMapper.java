@@ -19,6 +19,7 @@ public class PropertyMapper {
     public PropertyEntity createRequestToEntity(PropertyCreateRequest request) {
         PropertyEntity propertyEntity = PropertyEntity.builder()
                 .name(request.getName())
+                .isRequired(request.isRequired())
                 .build();
 
         if (request.getValues() != null) {
@@ -59,6 +60,9 @@ public class PropertyMapper {
     public PropertyEntity updateRequestToEntity(PropertyUpdateRequest request, PropertyEntity entity) {
         if (request.getName() != null) {
             entity.setName(request.getName());
+        }
+        if (request.getIsRequired() != null) {
+            entity.setIsRequired(request.getIsRequired());
         }
         return entity;
     }

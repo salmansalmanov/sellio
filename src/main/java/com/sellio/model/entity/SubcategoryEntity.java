@@ -16,6 +16,7 @@ import java.util.List;
 @Table(name = "subcategories")
 public class SubcategoryEntity extends BaseEntity {
     private String name;
+    private Boolean isTitleRequired;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")

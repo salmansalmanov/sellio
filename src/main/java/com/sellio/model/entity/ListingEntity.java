@@ -23,6 +23,10 @@ public class ListingEntity extends BaseEntity {
     private boolean isNew;
     private boolean hasDelivery;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "city_id")
+    private CityEntity city;
+
     @OneToMany(
             mappedBy = "listing",
             cascade = CascadeType.ALL,

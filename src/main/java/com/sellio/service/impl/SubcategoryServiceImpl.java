@@ -34,7 +34,8 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     public DataResult<SubcategoryDetailsResponse> save(SubcategoryCreateRequest request) {
         CategoryEntity categoryEntity = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id " + request.getCategoryId()));
-        SubcategoryEntity subcategoryEntity = subcategoryMapper.createRequestToEntity(request, categoryEntity);
+        SubcategoryEntity subcategoryEntity = subcategoryMapper.createRequestToEntity(request);
+        subcategoryEntity.setCategory(categoryEntity);
         SubcategoryEntity savedEntity = subcategoryRepository.save(subcategoryEntity);
         return new SuccessDataResult<>(subcategoryMapper.toDetailsResponse(savedEntity), "Subcategory created successfully");
     }

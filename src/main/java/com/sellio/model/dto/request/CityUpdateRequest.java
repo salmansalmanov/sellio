@@ -5,14 +5,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.UUID;
-
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyUpdateRequest {
+public class CityUpdateRequest {
     private String name;
-    private UUID subcategoryId;
-    private Boolean isRequired;
 }

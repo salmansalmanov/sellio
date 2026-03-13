@@ -20,4 +20,7 @@ public class SubcategoryCreateRequest {
 
     @NotBlank(message = "Name must not be blank")
     private String name;
+
+    @NotNull(message = "isTitleRequired must not be null")
+    private Boolean isTitleRequired;
 }

@@ -17,10 +17,10 @@ import java.util.UUID;
 public class SubcategoryMapper {
     private final PropertyMapper propertyMapper;
 
-    public SubcategoryEntity createRequestToEntity(SubcategoryCreateRequest request, CategoryEntity categoryEntity) {
+    public SubcategoryEntity createRequestToEntity(SubcategoryCreateRequest request) {
         return SubcategoryEntity.builder()
                 .name(request.getName())
-                .category(categoryEntity)
+                .isTitleRequired(request.getIsTitleRequired())
                 .build();
     }
 

@@ -14,4 +14,5 @@ import java.util.UUID;
 public class SubcategoryUpdateRequest {
     private String name;
     private UUID categoryId;
+    private Boolean isTitleRequired;
 }
