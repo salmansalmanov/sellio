@@ -1,6 +1,5 @@
 package com.sellio.model.dto.request;
 
-import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -14,11 +13,11 @@ import java.util.UUID;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyValueAddRequest {
+public class PropertyDependencyRequest {
 
-    @NotNull(message = "Property ID must not be null")
-    private UUID propertyId;
+    @NotNull(message = "Parent property ID must not be null")
+    private UUID parentPropertyValueId;
 
-    @NotNull(message = "Values must not be null")
-    private List<String> values;
+    @NotNull(message = "Child property ID must not be null")
+    private List<UUID> childPropertyValueIds;
 }

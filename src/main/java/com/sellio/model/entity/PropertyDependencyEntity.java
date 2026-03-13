@@ -5,10 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.SuperBuilder;
 
 @Entity
 @Setter
 @Getter
+@SuperBuilder
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "property_dependencies")

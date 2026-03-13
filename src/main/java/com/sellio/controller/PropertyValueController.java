@@ -2,8 +2,9 @@ package com.sellio.controller;
 
 import com.sellio.model.dto.request.PropertyValueAddRequest;
 import com.sellio.model.dto.request.PropertyValueUpdateRequest;
-import com.sellio.model.dto.response.core.PropertyValueDetailsResponse;
+import com.sellio.model.dto.response.core.PropertyValueGetResponse;
 import com.sellio.model.dto.response.core.PropertyValueResponse;
+import com.sellio.model.dto.response.core.PropertyValueSaveResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
 import com.sellio.model.result.Result;
@@ -33,7 +34,7 @@ public class PropertyValueController {
                     @ApiResponse(description = "Success", responseCode = "201")
             }
     )
-    public ResponseEntity<DataResult<PropertyValueDetailsResponse>> createPropertyValue(@Valid @RequestBody PropertyValueAddRequest request) {
+    public ResponseEntity<DataResult<PropertyValueSaveResponse>> createPropertyValue(@Valid @RequestBody PropertyValueAddRequest request) {
         return new ResponseEntity<>(propertyValueService.save(request), HttpStatus.CREATED);
     }
 
@@ -44,7 +45,7 @@ public class PropertyValueController {
                     @ApiResponse(description = "Success", responseCode = "200")
             }
     )
-    public ResponseEntity<DataResult<PropertyValueDetailsResponse>> getPropertyValueById(@PathVariable UUID id) {
+    public ResponseEntity<DataResult<PropertyValueGetResponse>> getPropertyValueById(@PathVariable UUID id) {
         return new ResponseEntity<>(propertyValueService.getById(id), HttpStatus.OK);
     }
 
@@ -70,7 +71,7 @@ public class PropertyValueController {
                     @ApiResponse(description = "Success", responseCode = "200")
             }
     )
-    public ResponseEntity<DataResult<PropertyValueDetailsResponse>> updatePropertyValueById(@PathVariable UUID id, @RequestBody @Valid PropertyValueUpdateRequest request) {
+    public ResponseEntity<DataResult<PropertyValueGetResponse>> updatePropertyValueById(@PathVariable UUID id, @RequestBody @Valid PropertyValueUpdateRequest request) {
         return new ResponseEntity<>(propertyValueService.update(id, request), HttpStatus.OK);
     }
 

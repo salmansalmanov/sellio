@@ -2,6 +2,7 @@ package com.sellio.model.dto.response.core;
 
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Setter
@@ -9,11 +10,11 @@ import java.util.UUID;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyValueDetailsResponse {
+public class PropertyValueGetResponse {
     private UUID subcategoryId;
     private String subcategoryName;
     private UUID propertyId;
     private String propertyName;
-    private UUID valueId;
-    private String value;
+    private UUID propertyValueId;
+    private String propertyValueName;
 }

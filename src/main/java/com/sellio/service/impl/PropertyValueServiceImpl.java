@@ -4,8 +4,9 @@ import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.PropertyValueMapper;
 import com.sellio.model.dto.request.PropertyValueAddRequest;
 import com.sellio.model.dto.request.PropertyValueUpdateRequest;
-import com.sellio.model.dto.response.core.PropertyValueDetailsResponse;
+import com.sellio.model.dto.response.core.PropertyValueGetResponse;
 import com.sellio.model.dto.response.core.PropertyValueResponse;
+import com.sellio.model.dto.response.core.PropertyValueSaveResponse;
 import com.sellio.model.entity.PropertyEntity;
 import com.sellio.model.entity.PropertyValueEntity;
 import com.sellio.model.result.*;
@@ -20,6 +21,8 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 @Service
@@ -30,20 +33,29 @@ public class PropertyValueServiceImpl implements PropertyValueService {
     private final PropertyValueRepository propertyValueRepository;
 
     @Override
-    public DataResult<PropertyValueDetailsResponse> save(PropertyValueAddRequest request) {
+    @Transactional
+    public DataResult<PropertyValueSaveResponse> save(PropertyValueAddRequest request) {
         PropertyEntity propertyEntity = propertyRepository.findById(request.getPropertyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + request.getPropertyId()));
-        PropertyValueEntity propertyValueEntity = propertyValueMapper.addRequestToEntity(request);
-        propertyValueEntity.setProperty(propertyEntity);
-        PropertyValueEntity savedEntity = propertyValueRepository.save(propertyValueEntity);
-        return new SuccessDataResult<>(propertyValueMapper.toDetailsResponse(savedEntity), "Property value saved successfully");
+
+        List<PropertyValueEntity> propertyValueEntities = new ArrayList<>();
+        for (String value : request.getValues()) {
+            PropertyValueEntity propertyValueEntity = PropertyValueEntity.builder()
+                    .property(propertyEntity)
+                    .value(value)
+                    .build();
+            propertyValueEntities.add(propertyValueEntity);
+        }
+
+        List<PropertyValueEntity> savedEntities = propertyValueRepository.saveAll(propertyValueEntities);
+        return new SuccessDataResult<>(propertyValueMapper.toSaveResponse(savedEntities), "Property value saved successfully");
     }
 
     @Override
-    public DataResult<PropertyValueDetailsResponse> getById(UUID id) {
+    public DataResult<PropertyValueGetResponse> getById(UUID id) {
         PropertyValueEntity entity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
-        return new SuccessDataResult<>(propertyValueMapper.toDetailsResponse(entity), "Property value found successfully");
+        return new SuccessDataResult<>(propertyValueMapper.toGetResponse(entity), "Property value found successfully");
     }
 
     @Override
@@ -76,7 +88,7 @@ public class PropertyValueServiceImpl implements PropertyValueService {
 
     @Override
     @Transactional
-    public DataResult<PropertyValueDetailsResponse> update(UUID id, PropertyValueUpdateRequest request) {
+    public DataResult<PropertyValueGetResponse> update(UUID id, PropertyValueUpdateRequest request) {
         PropertyValueEntity propertyValueEntity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property value not found with id: " + id));
         if (request.getPropertyId() != null) {
@@ -85,7 +97,7 @@ public class PropertyValueServiceImpl implements PropertyValueService {
             propertyValueEntity.setProperty(propertyEntity);
         }
         propertyValueEntity = propertyValueMapper.updateRequestToEntity(request, propertyValueEntity);
-        return new SuccessDataResult<>(propertyValueMapper.toDetailsResponse(propertyValueEntity), "Property value updated successfully");
+        return new SuccessDataResult<>(propertyValueMapper.toGetResponse(propertyValueEntity), "Property value updated successfully");
     }
 
     @Override
