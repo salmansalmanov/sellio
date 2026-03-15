@@ -92,9 +92,10 @@ public class ShopServiceImpl implements ShopService {
                 shopMapper.toResponses(shopPage.getContent())
         );
         for (ShopResponse shopResponse : shopResponsePageData.getContent()) {
-            Object viewCount = redisTemplate.opsForValue().get(shopResponse.getId().toString());
+            String key = "shop_view_count_" + shopResponse.getId();
+            Object viewCount = redisTemplate.opsForValue().get(key);
             if (viewCount == null) {
-                redisTemplate.opsForValue().set(shopResponse.getId().toString(), String.valueOf(0));
+                redisTemplate.opsForValue().set(key, String.valueOf(0));
             } else {
                 shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
             }
@@ -109,14 +110,15 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         ShopDetailsResponse shopDetailsResponse = shopMapper.toDetailsResponse(shopEntity);
-        Object viewCount = redisTemplate.opsForValue().get(shopEntity.getId().toString());
+        String key = "shop_view_count_" + shopEntity.getId();
+        Object viewCount = redisTemplate.opsForValue().get(key);
 
         if (viewCount == null) {
-            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(1));
+            redisTemplate.opsForValue().set(key, String.valueOf(1));
             shopDetailsResponse.setViewCount(1L);
         } else {
             long longViewCount = Long.parseLong(viewCount.toString()) + 1;
-            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(longViewCount));
+            redisTemplate.opsForValue().set(key, String.valueOf(longViewCount));
             shopDetailsResponse.setViewCount(longViewCount);
         }
 
