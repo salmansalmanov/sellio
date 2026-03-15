@@ -119,17 +119,21 @@ public class ListingServiceImpl implements ListingService {
             initializeImages(images, entity);
         }
         listingRepository.save(entity);
+        mailService.sendListingUpdatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing updated successfully");
     }
 
     @Override
-    public Result delete(UUID id) {
+    public DataResult<ListingDetailsResponse> deactivate(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        entity.setStatus(ListingStatus.DELETED);
+        entity.setStatus(ListingStatus.INACTIVE);
         entity.setDeletedAt(LocalDateTime.now());
-        listingRepository.save(entity);
-        return new SuccessResult("Listing added to expired list");
+        ListingEntity savedEntity = listingRepository.save(entity);
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(savedEntity);
+        response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
+        mailService.sendListingExpiredMail(entity.getOwner().getEmail());
+        return new SuccessDataResult<>(response, "Listing deactivated successfully");
     }
 
     @Override
@@ -140,6 +144,7 @@ public class ListingServiceImpl implements ListingService {
         listingRepository.save(entity);
         ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
+        mailService.sendListingActivatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(response, "Listing activated successfully");
     }
 

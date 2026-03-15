@@ -88,15 +88,15 @@ public class ListingController {
         return new ResponseEntity<>(listingService.update(id, request, images), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}")
+    @PatchMapping("/deactivate/{id}")
     @Operation(
             summary = "Delete listing by ID",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "200")
             }
     )
-    public ResponseEntity<Result> deleteListingById(@PathVariable UUID id) {
-        return new ResponseEntity<>(listingService.delete(id), HttpStatus.OK);
+    public ResponseEntity<DataResult<ListingDetailsResponse>> deactivateListingById(@PathVariable UUID id) {
+        return new ResponseEntity<>(listingService.deactivate(id), HttpStatus.OK);
     }
 
     @PatchMapping("/activate/{id}")
