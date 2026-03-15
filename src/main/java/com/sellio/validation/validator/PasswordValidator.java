@@ -1,4 +1,4 @@
-package com.sellio.validaiton.validator;
+package com.sellio.validation.validator;
 
 import com.sellio.validation.annotation.Password;
 import jakarta.validation.ConstraintValidator;

@@ -1,6 +1,6 @@
 package com.sellio.validation.annotation;
 
-import com.sellio.validaiton.validator.PasswordValidator;
+import com.sellio.validation.validator.PhoneNumberValidator;
 import jakarta.validation.Constraint;
 import jakarta.validation.Payload;
 
@@ -9,9 +9,9 @@ import java.lang.annotation.*;
 @Documented
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = PasswordValidator.class)
-public @interface Password {
-    String message() default "Invalid password format";
+@Constraint(validatedBy = PhoneNumberValidator.class)
+public @interface PhoneNumber {
+    String message() default "Invalid phone number format";
 
     Class<?>[] groups() default {};
 

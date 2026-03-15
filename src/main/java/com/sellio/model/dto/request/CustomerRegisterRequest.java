@@ -1,8 +1,7 @@
 package com.sellio.model.dto.request;
 
 import com.sellio.model.enums.PricingPlan;
-import com.sellio.validaiton.annotation.PhoneNumber;
-import jakarta.validation.constraints.Email;
+import com.sellio.validation.annotation.PhoneNumber;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;

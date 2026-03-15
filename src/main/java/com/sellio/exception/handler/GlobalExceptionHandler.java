@@ -53,6 +53,12 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @ExceptionHandler(InvalidTokenException.class)
+    @ApiResponse(responseCode = "400", description = "Invalid token")
+    public ResponseEntity<ErrorResult> handleInvalidTokenException(InvalidTokenException ex) {
+        return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     @ApiResponse(responseCode = "400", description = "Bad Request")
     public ResponseEntity<ErrorDataResult<Map<String, String>>> handleMethodArgumentNotValidException(MethodArgumentNotValidException ex) {

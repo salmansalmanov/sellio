@@ -19,7 +19,6 @@ public class AdminMapper {
                 .lastName(request.getLastName())
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(request.getPassword())
                 .role(Role.ADMIN)
                 .status(UserStatus.PENDING)
                 .build();
@@ -27,6 +26,7 @@ public class AdminMapper {
 
     public AdminDetailsResponse toDetailsResponse(AdminEntity entity) {
         return AdminDetailsResponse.builder()
+                .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
                 .username(entity.getUsername())
