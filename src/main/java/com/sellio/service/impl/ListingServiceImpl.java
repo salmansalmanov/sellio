@@ -127,11 +127,11 @@ public class ListingServiceImpl implements ListingService {
     public Result delete(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        entity.setStatus(ListingStatus.DELETED);
+        entity.setStatus(ListingStatus.INACTIVE);
         entity.setDeletedAt(LocalDateTime.now());
         listingRepository.save(entity);
         mailService.sendListingExpiredMail(entity.getOwner().getEmail());
-        return new SuccessResult("Listing added to expired list");
+        return new SuccessResult("Listing deactivated successfully");
     }
 
     @Override

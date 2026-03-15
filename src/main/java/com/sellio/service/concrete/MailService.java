@@ -146,7 +146,7 @@ public class MailService {
     @Async
     public void sendListingExpiredMail(String to) {
         try {
-            ClassPathResource resource = new ClassPathResource("templates/listing-expire.html");
+            ClassPathResource resource = new ClassPathResource("templates/listing-deactivate.html");
             String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
 
             MimeMessage mimeMessage = mailSender.createMimeMessage();
