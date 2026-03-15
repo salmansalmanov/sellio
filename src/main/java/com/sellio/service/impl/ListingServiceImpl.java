@@ -18,6 +18,7 @@ import com.sellio.service.abstraction.ListingService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -50,6 +51,7 @@ public class ListingServiceImpl implements ListingService {
     private final PropertyValueRepository propertyValueRepository;
     private final CloudinaryService cloudinaryService;
     private final RedisTemplate<String, String> redisTemplate;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional
@@ -104,17 +106,7 @@ public class ListingServiceImpl implements ListingService {
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
 
         ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
-        String key = "listing_view_count_" + entity.getId();
-        Object viewCount = redisTemplate.opsForValue().get(key);
-        if (viewCount == null) {
-            redisTemplate.opsForValue().set(key, String.valueOf(1));
-            viewCount = 1L;
-        } else {
-            long longViewCount = Long.parseLong(viewCount.toString()) + 1;
-            redisTemplate.opsForValue().set(key, String.valueOf(longViewCount));
-            viewCount = longViewCount;
-        }
-        response.setViewCount((Long) viewCount);
+        response.setViewCount(redisUtil.initializeViewCount(id, DomainType.LISTING));
         return new SuccessDataResult<>(response, "Listing found successfully");
     }
 

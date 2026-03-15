@@ -24,6 +24,7 @@ import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.RedisUtil;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
@@ -52,6 +53,7 @@ public class ShopServiceImpl implements ShopService {
     private final ShopRepository shopRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ApplicationEventPublisher eventPublisher;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional
@@ -75,6 +77,8 @@ public class ShopServiceImpl implements ShopService {
         eventPublisher.publishEvent(
                 new ImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
         );
+        String key = "shop_view_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(key, String.valueOf(0));
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
@@ -96,11 +100,7 @@ public class ShopServiceImpl implements ShopService {
         for (ShopResponse shopResponse : shopResponsePageData.getContent()) {
             String key = "shop_view_count_" + shopResponse.getId();
             Object viewCount = redisTemplate.opsForValue().get(key);
-            if (viewCount == null) {
-                redisTemplate.opsForValue().set(key, String.valueOf(0));
-            } else {
-                shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
-            }
+            shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
         }
 
         return new SuccessDataResult<>(shopResponsePageData, "Shops found successfully");
@@ -112,19 +112,7 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         ShopDetailsResponse shopDetailsResponse = shopMapper.toDetailsResponse(shopEntity);
-        String key = "shop_view_count_" + shopEntity.getId();
-        Object viewCount = redisTemplate.opsForValue().get(key);
-
-        if (viewCount == null) {
-            redisTemplate.opsForValue().set(key, String.valueOf(1));
-            viewCount = 1L;
-        } else {
-            long longViewCount = Long.parseLong(viewCount.toString()) + 1;
-            redisTemplate.opsForValue().set(key, String.valueOf(longViewCount));
-            viewCount = longViewCount;
-        }
-        shopDetailsResponse.setViewCount((Long) viewCount);
-
+        shopDetailsResponse.setViewCount(redisUtil.initializeViewCount(id, DomainType.SHOP));
         return new SuccessDataResult<>(shopDetailsResponse, "Shop found successfully");
     }
 
