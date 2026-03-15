@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.3.2-add-is_required-column-to-properties
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: properties
+            columns:
+              - column:
+                  name: is_required
+                  type: BOOLEAN
+                  constraints:
+                    nullable: false

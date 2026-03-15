@@ -1,18 +1,15 @@
 package com.sellio.service.concrete;
 
 import com.sellio.exception.custom.MailException;
-import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -67,7 +64,7 @@ public class MailService {
     }
 
     @Async
-    public void sendUpdateEmail(String to) {
+    public void sendUpdateMail(String to) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/update.html");
             String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
@@ -87,7 +84,7 @@ public class MailService {
     }
 
     @Async
-    public void sendDeleteEmail(String to) {
+    public void sendDeleteMail(String to) {
         try {
             ClassPathResource resource = new ClassPathResource("templates/delete.html");
             String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
@@ -97,6 +94,26 @@ public class MailService {
 
             helper.setTo(to);
             helper.setSubject("Hesabınız silindi");
+            helper.setFrom(from);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new MailException("Mail exception: " + e.getMessage());
+        }
+    }
+
+    @Async
+    public void sendListingCreatedMail(String to) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/listing-create.html");
+            String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Elan yaradıldı");
             helper.setFrom(from);
             helper.setText(htmlContent, true);
 

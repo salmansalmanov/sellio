@@ -19,5 +19,5 @@ public interface AdminService extends UserService {
 
     DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request);
 
-    void deleteAdminById(UUID id);
+    Result deleteAdminById(UUID id);
 }

@@ -11,13 +11,13 @@ public class FileUtil {
     private static final List<String> ALLOWED_EXTENSIONS = List.of("jpg", "jpeg", "png");
     private static final long MAX_SIZE = 5 * 1024 * 1024;
 
-    public boolean isValidImage(MultipartFile file) {
+    public void validateImage(MultipartFile file) {
         if (file == null) {
-            return false;
+            throw new InvalidInputException("File is null");
         }
         String fileName = file.getOriginalFilename();
         if (fileName == null) {
-            return false;
+            throw new InvalidInputException("File name is null");
         }
         String extension = getExtension(fileName);
         if (!ALLOWED_EXTENSIONS.contains(extension)) {
@@ -27,7 +27,6 @@ public class FileUtil {
         if (file.getSize() > MAX_SIZE) {
             throw new InvalidInputException("Invalid file size");
         }
-        return true;
     }
 
     private String getExtension(String fileName) {

@@ -1,10 +1,7 @@
 package com.sellio.model.entity;
 
 import com.sellio.model.enums.ImageType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,4 +24,8 @@ public class ImageEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private ImageType type;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "listing_id")
+    private ListingEntity listing;
 }

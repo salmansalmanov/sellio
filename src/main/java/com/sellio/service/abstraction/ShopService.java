@@ -7,6 +7,7 @@ import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
+import com.sellio.model.result.Result;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -19,5 +20,5 @@ public interface ShopService extends UserService {
 
     DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) throws IOException;
 
-    void deleteShopById(UUID id);
+    Result deleteShopById(UUID id);
 }

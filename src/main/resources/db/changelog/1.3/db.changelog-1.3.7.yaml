@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.3.7-drop-not-null-constraint-on-thumbnail_id
+      author: salmansalmanov
+      changes:
+        - dropNotNullConstraint:
+            tableName: listings
+            columnName: thumbnail_id

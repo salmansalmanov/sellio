@@ -83,7 +83,6 @@ public class AdminController {
             }
     )
     public ResponseEntity<Result> deleteAdminById(@PathVariable UUID id) {
-        adminService.deleteAdminById(id);
-        return ResponseEntity.ok(new SuccessResult("Admin deleted successfully"));
+        return new ResponseEntity<>(adminService.deleteAdminById(id), HttpStatus.OK);
     }
 }

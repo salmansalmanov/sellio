@@ -55,10 +55,6 @@ dependencies {
     // Validation
     implementation 'org.springframework.boot:spring-boot-starter-validation'
 
-    // Mapstruct
-    implementation 'org.mapstruct:mapstruct:1.6.3'
-    annotationProcessor 'org.mapstruct:mapstruct-processor:1.6.3'
-
     // AOP
     implementation 'org.springframework.boot:spring-boot-starter-aop:3.5.11'
 

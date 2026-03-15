@@ -60,7 +60,6 @@ public class ShopController {
     @DeleteMapping("/{id}")
     @Operation(summary = "Delete shop by ID")
     public ResponseEntity<Result> deleteShopById(@PathVariable UUID id) {
-        shopService.deleteShopById(id);
-        return new ResponseEntity<>(new SuccessResult("Shop deleted successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(shopService.deleteShopById(id), HttpStatus.OK);
     }
 }

@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ImageRepository extends JpaRepository<ImageEntity, UUID> {
-    Optional<ImageEntity> findByPublicId(String publicId);
+    void deleteAllByListingId(UUID listingId);
 }

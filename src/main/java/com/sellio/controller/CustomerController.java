@@ -73,7 +73,6 @@ public class CustomerController {
             }
     )
     public ResponseEntity<Result> deleteCustomerById(@PathVariable UUID id) {
-        customerService.deleteCustomerById(id);
-        return new ResponseEntity<>(new SuccessResult("Customer deleted successfully"), HttpStatus.OK);
+        return new ResponseEntity<>(customerService.deleteCustomerById(id), HttpStatus.OK);
     }
 }
