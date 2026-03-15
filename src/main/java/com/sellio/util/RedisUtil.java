@@ -25,4 +25,10 @@ public class RedisUtil {
         }
         return (Long) viewCount;
     }
+
+    public Long getViewCount(UUID id, DomainType type) {
+        String key = (type == DomainType.SHOP) ? "shop_view_count_" + id : "listing_view_count_" + id;
+        Object viewCount = redisTemplate.opsForValue().get(key);
+        return Long.parseLong(String.valueOf(viewCount));
+    }
 }

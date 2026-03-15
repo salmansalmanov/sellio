@@ -98,9 +98,7 @@ public class ShopServiceImpl implements ShopService {
                 shopMapper.toResponses(shopPage.getContent())
         );
         for (ShopResponse shopResponse : shopResponsePageData.getContent()) {
-            String key = "shop_view_count_" + shopResponse.getId();
-            Object viewCount = redisTemplate.opsForValue().get(key);
-            shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
+            shopResponse.setViewCount(redisUtil.getViewCount(shopResponse.getId(), DomainType.SHOP));
         }
 
         return new SuccessDataResult<>(shopResponsePageData, "Shops found successfully");

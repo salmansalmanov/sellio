@@ -23,4 +23,6 @@ public interface ListingService {
     DataResult<ListingDetailsResponse> update(UUID id, ListingUpdateRequest request,  List<MultipartFile> images) throws IOException;
 
     Result delete(UUID id);
+
+    DataResult<ListingDetailsResponse> activate(UUID id);
 }
