@@ -1,0 +1,8 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.3.9-drop-is_required-on-properties
+      author: salmansalmanov
+      changes:
+        - dropColumn:
+            tableName: properties
+            columnName: is_required
