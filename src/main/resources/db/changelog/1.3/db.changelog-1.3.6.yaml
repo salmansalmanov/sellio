@@ -1,0 +1,19 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.3.6-add-thumbnail_id-to-listings
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: listings
+            columns:
+              - column:
+                  name: thumbnail_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: listings
+            baseColumnNames: thumbnail_id
+            referencedTableName: images
+            referencedColumnNames: id
+            constraintName: fk_listings_thumbnail_id_images_id

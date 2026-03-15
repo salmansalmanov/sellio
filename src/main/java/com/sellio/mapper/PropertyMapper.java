@@ -19,7 +19,7 @@ public class PropertyMapper {
     public PropertyEntity createRequestToEntity(PropertyCreateRequest request) {
         PropertyEntity propertyEntity = PropertyEntity.builder()
                 .name(request.getName())
-                .isRequired(request.isRequired())
+                .isRequired(request.getIsRequired())
                 .build();
 
         if (request.getValues() != null) {

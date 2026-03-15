@@ -18,15 +18,18 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ListingCreateRequest {
 
+    @NotNull(message = "Owner ID must not be null")
+    private UUID ownerId;
+
     @NotNull(message = "Subcategory must not be null")
     private UUID subcategoryId;
     private List<UUID> propertyValueIds;
 
     @NotNull(message = "isNew must not be null")
-    private boolean isNew;
+    private Boolean isNew;
 
     @NotNull(message = "hasDelivery must not be null")
-    private boolean hasDelivery;
+    private Boolean hasDelivery;
 
     @NotNull(message = "City must not be null")
     private UUID cityId;

@@ -41,8 +41,10 @@ public class PropertyValueMapper {
 
     public PropertyValueResponse toResponse(PropertyValueEntity entity) {
         return PropertyValueResponse.builder()
-                .id(entity.getId())
-                .value(entity.getValue())
+                .propertyId(entity.getProperty().getId())
+                .property(entity.getProperty().getName())
+                .propertyValueId(entity.getId())
+                .propertyValue(entity.getValue())
                 .build();
     }
 

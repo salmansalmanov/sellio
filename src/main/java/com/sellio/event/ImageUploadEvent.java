@@ -1,5 +1,6 @@
 package com.sellio.event;
 
+import com.sellio.model.enums.DomainType;
 import com.sellio.model.enums.ImageType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,8 +11,9 @@ import java.util.UUID;
 @Setter
 @Getter
 @AllArgsConstructor
-public class ShopImageUploadEvent {
-    private UUID shopId;
+public class ImageUploadEvent {
+    private UUID referenceId;
     private byte[] fileBytes;
     private ImageType imageType;
+    private DomainType domainType;
 }

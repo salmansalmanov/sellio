@@ -20,7 +20,7 @@ public class PropertyCreateRequest {
     private String name;
 
     @NotNull(message = "isRequired must not be null")
-    private boolean isRequired;
+    private Boolean isRequired;
 
     @NotNull(message = "Subcategory ID must not be null")
     private UUID subcategoryId;

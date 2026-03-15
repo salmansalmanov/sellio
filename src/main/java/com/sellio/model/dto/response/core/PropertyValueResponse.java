@@ -10,6 +10,8 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class PropertyValueResponse {
-    private UUID id;
-    private String value;
+    private UUID propertyValueId;
+    private String propertyValue;
+    private UUID propertyId;
+    private String property;
 }

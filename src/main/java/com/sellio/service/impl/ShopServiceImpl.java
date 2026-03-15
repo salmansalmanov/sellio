@@ -1,7 +1,7 @@
 package com.sellio.service.impl;
 
 import com.sellio.aop.annotation.CleanupCloudinary;
-import com.sellio.event.ShopImageUploadEvent;
+import com.sellio.event.ImageUploadEvent;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ShopMapper;
 import com.sellio.model.dto.request.RegisterRequest;
@@ -13,6 +13,7 @@ import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AddressEntity;
 import com.sellio.model.entity.ShopAddressEntity;
 import com.sellio.model.entity.ShopEntity;
+import com.sellio.model.enums.DomainType;
 import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
@@ -63,17 +64,15 @@ public class ShopServiceImpl implements ShopService {
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
 
-        if (fileUtil.isValidImage(logo)) {
-            eventPublisher.publishEvent(
-                    new ShopImageUploadEvent(savedEntity.getId(), logo.getBytes(), ImageType.LOGO)
-            );
-        }
+        fileUtil.validateImage(logo);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(savedEntity.getId(), logo.getBytes(), ImageType.LOGO, DomainType.SHOP)
+        );
 
-        if (fileUtil.isValidImage(banner)) {
-            eventPublisher.publishEvent(
-                    new ShopImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER)
-            );
-        }
+        fileUtil.validateImage(banner);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
+        );
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
@@ -132,19 +131,19 @@ public class ShopServiceImpl implements ShopService {
 
         shopEntity = shopMapper.updateRequestToEntity(request, shopEntity);
         initializeAddresses(shopEntity, request.getPlaceIds());
-        if (fileUtil.isValidImage(logo)) {
-            eventPublisher.publishEvent(
-                    new ShopImageUploadEvent(shopEntity.getId(), logo.getBytes(), ImageType.LOGO)
-            );
-        }
 
-        if (fileUtil.isValidImage(banner)) {
-            eventPublisher.publishEvent(
-                    new ShopImageUploadEvent(shopEntity.getId(), banner.getBytes(), ImageType.BANNER)
-            );
-        }
+        fileUtil.validateImage(logo);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(shopEntity.getId(), logo.getBytes(), ImageType.LOGO, DomainType.SHOP)
+        );
+
+        fileUtil.validateImage(banner);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(shopEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
+        );
+
         shopRepository.save(shopEntity);
-        mailService.sendUpdateEmail(shopEntity.getEmail());
+        mailService.sendUpdateMail(shopEntity.getEmail());
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
@@ -155,7 +154,7 @@ public class ShopServiceImpl implements ShopService {
         cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
         redisTemplate.delete(String.valueOf(entity.getId()));
-        mailService.sendDeleteEmail(entity.getEmail());
+        mailService.sendDeleteMail(entity.getEmail());
         return new SuccessResult("Shop deleted successfully");
     }
 
