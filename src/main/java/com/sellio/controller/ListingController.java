@@ -98,4 +98,15 @@ public class ListingController {
     public ResponseEntity<Result> deleteListingById(@PathVariable UUID id) {
         return new ResponseEntity<>(listingService.delete(id), HttpStatus.OK);
     }
+
+    @PatchMapping("/activate/{id}")
+    @Operation(
+            summary = "Activate listing by ID",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<DataResult<ListingDetailsResponse>> activateListingById(@PathVariable UUID id) {
+        return new ResponseEntity<>(listingService.activate(id), HttpStatus.OK);
+    }
 }

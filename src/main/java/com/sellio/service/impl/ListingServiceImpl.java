@@ -25,7 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,7 +49,6 @@ public class ListingServiceImpl implements ListingService {
     private final ApplicationEventPublisher eventPublisher;
     private final PropertyValueRepository propertyValueRepository;
     private final CloudinaryService cloudinaryService;
-    private final RedisTemplate<String, String> redisTemplate;
     private final RedisUtil redisUtil;
 
     @Override
@@ -157,6 +155,17 @@ public class ListingServiceImpl implements ListingService {
         entity.setDeletedAt(LocalDateTime.now());
         listingRepository.save(entity);
         return new SuccessResult("Listing added to expired list");
+    }
+
+    @Override
+    public DataResult<ListingDetailsResponse> activate(UUID id) {
+        ListingEntity entity = listingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
+        entity.setStatus(ListingStatus.ACTIVE);
+        listingRepository.save(entity);
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
+        response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
+        return new SuccessDataResult<>(response, "Listing activated successfully");
     }
 
     private String generateTitle(List<PropertyValueEntity> propertyValues) {
