@@ -24,6 +24,7 @@ import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -35,6 +36,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -115,12 +117,13 @@ public class ShopServiceImpl implements ShopService {
 
         if (viewCount == null) {
             redisTemplate.opsForValue().set(key, String.valueOf(1));
-            shopDetailsResponse.setViewCount(1L);
+            viewCount = 1L;
         } else {
             long longViewCount = Long.parseLong(viewCount.toString()) + 1;
             redisTemplate.opsForValue().set(key, String.valueOf(longViewCount));
-            shopDetailsResponse.setViewCount(longViewCount);
+            viewCount = longViewCount;
         }
+        shopDetailsResponse.setViewCount((Long) viewCount);
 
         return new SuccessDataResult<>(shopDetailsResponse, "Shop found successfully");
     }

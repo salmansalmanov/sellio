@@ -102,7 +102,20 @@ public class ListingServiceImpl implements ListingService {
     public DataResult<ListingDetailsResponse> getById(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing found successfully");
+
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
+        String key = "listing_view_count_" + entity.getId();
+        Object viewCount = redisTemplate.opsForValue().get(key);
+        if (viewCount == null) {
+            redisTemplate.opsForValue().set(key, String.valueOf(1));
+            viewCount = 1L;
+        } else {
+            long longViewCount = Long.parseLong(viewCount.toString()) + 1;
+            redisTemplate.opsForValue().set(key, String.valueOf(longViewCount));
+            viewCount = longViewCount;
+        }
+        response.setViewCount((Long) viewCount);
+        return new SuccessDataResult<>(response, "Listing found successfully");
     }
 
     @Override
