@@ -44,7 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerEntity.setStatus(UserStatus.ACTIVE);
         customerEntity.setPassword(passwordEncoder.encode(customerRegisterRequest.getPassword()));
         CustomerEntity savedEntity = userRepository.save(customerEntity);
-        mailService.sendRegistrationMail(savedEntity.getEmail());
+//        mailService.sendRegistrationMail(savedEntity.getEmail());
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(savedEntity), "Customer registered successfully");
     }
 
@@ -78,7 +78,7 @@ public class CustomerServiceImpl implements CustomerService {
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
         customerEntity = customerMapper.updateRequestToEntity(request, customerEntity);
         customerRepository.save(customerEntity);
-        mailService.sendUpdateMail(customerEntity.getEmail());
+//        mailService.sendUpdateMail(customerEntity.getEmail());
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer updated successfully");
     }
 
@@ -88,7 +88,7 @@ public class CustomerServiceImpl implements CustomerService {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
         customerRepository.delete(customerEntity);
-        mailService.sendDeleteMail(customerEntity.getEmail());
+//        mailService.sendDeleteMail(customerEntity.getEmail());
         return new SuccessResult("Customer deleted successfully");
     }
 }

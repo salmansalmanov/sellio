@@ -69,7 +69,7 @@ public class ShopServiceImpl implements ShopService {
         shopEntity.setPassword(passwordEncoder.encode(shopRegisterRequest.getPassword()));
 
         ShopEntity savedEntity = userRepository.save(shopEntity);
-        mailService.sendRegistrationMail(shopEntity.getEmail());
+//        mailService.sendRegistrationMail(shopEntity.getEmail());
 
         fileUtil.validateImage(logo);
         eventPublisher.publishEvent(
@@ -137,7 +137,7 @@ public class ShopServiceImpl implements ShopService {
         );
 
         shopRepository.save(shopEntity);
-        mailService.sendUpdateMail(shopEntity.getEmail());
+//        mailService.sendUpdateMail(shopEntity.getEmail());
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(shopEntity), "Shop updated successfully");
     }
 
@@ -149,7 +149,7 @@ public class ShopServiceImpl implements ShopService {
         cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
         redisTemplate.delete(String.valueOf(entity.getId()));
-        mailService.sendDeleteMail(entity.getEmail());
+//        mailService.sendDeleteMail(entity.getEmail());
         return new SuccessResult("Shop deleted successfully");
     }
 

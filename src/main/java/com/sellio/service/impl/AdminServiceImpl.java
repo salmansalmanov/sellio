@@ -45,24 +45,6 @@ public class AdminServiceImpl implements AdminService {
 
     @Override
     @Transactional
-    public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
-        AdminRegisterRequest adminRegisterRequest = (AdminRegisterRequest) registerRequest;
-        String key = "invite_" + registerRequest.getEmail();
-
-        if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
-            AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
-            entity.setStatus(UserStatus.ACTIVE);
-            entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
-            AdminEntity savedEntity = userRepository.save(entity);
-            redisTemplate.delete(key);
-            mailService.sendRegistrationMail(registerRequest.getEmail());
-            return new SuccessDataResult<>(adminMapper.toDetailsResponse(savedEntity), "Admin saved successfully");
-        }
-        throw new InvalidInputException("Invalid token");
-    }
-
-    @Override
-    @Transactional
     public void invite(AdminInviteRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AlreadyExistsException("Email already exists");
@@ -74,6 +56,24 @@ public class AdminServiceImpl implements AdminService {
             redisTemplate.opsForValue().set(key, token, 24, TimeUnit.HOURS);
             mailService.sendAdminInvitationMail(request.getEmail(), token);
         }
+    }
+
+    @Override
+    @Transactional
+    public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
+        AdminRegisterRequest adminRegisterRequest = (AdminRegisterRequest) registerRequest;
+        String key = "invite_" + registerRequest.getEmail();
+
+        if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
+            AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
+            entity.setStatus(UserStatus.ACTIVE);
+            entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
+            AdminEntity savedEntity = userRepository.save(entity);
+            redisTemplate.delete(key);
+//            mailService.sendRegistrationMail(registerRequest.getEmail());
+            return new SuccessDataResult<>(adminMapper.toDetailsResponse(savedEntity), "Admin saved successfully");
+        }
+        throw new InvalidInputException("Invalid token");
     }
 
     @Override
@@ -107,7 +107,7 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         entity = adminMapper.updateRequestToEntity(request, entity);
         adminRepository.save(entity);
-        mailService.sendUpdateMail(entity.getEmail());
+//        mailService.sendUpdateMail(entity.getEmail());
         return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
     }
 
@@ -118,7 +118,7 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         adminRepository.delete(entity);
         if (entity.getRole() != Role.SUPER_ADMIN) {
-            mailService.sendDeleteMail(entity.getEmail());
+//            mailService.sendDeleteMail(entity.getEmail());
         }
         return new SuccessResult("Admin deleted successfully");
     }
