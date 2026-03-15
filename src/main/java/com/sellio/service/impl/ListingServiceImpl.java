@@ -25,6 +25,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -50,6 +51,7 @@ public class ListingServiceImpl implements ListingService {
     private final PropertyValueRepository propertyValueRepository;
     private final CloudinaryService cloudinaryService;
     private final RedisUtil redisUtil;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -68,6 +70,8 @@ public class ListingServiceImpl implements ListingService {
         listingEntity.setStatus(ListingStatus.ACTIVE);
         ListingEntity savedEntity = listingRepository.save(listingEntity);
         initializeImages(images, savedEntity);
+        String key = "listing_view_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(key, "0");
 
         mailService.sendListingCreatedMail(savedEntity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(savedEntity), "Listing created successfully");
@@ -125,11 +129,13 @@ public class ListingServiceImpl implements ListingService {
     }
 
     @Override
+    @Transactional
     public DataResult<ListingDetailsResponse> deactivate(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
         entity.setStatus(ListingStatus.INACTIVE);
         entity.setDeletedAt(LocalDateTime.now());
+        entity.setExpireDate(LocalDateTime.now().plusMonths(1));
         ListingEntity savedEntity = listingRepository.save(entity);
         ListingDetailsResponse response = listingMapper.toDetailsResponse(savedEntity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
@@ -138,10 +144,12 @@ public class ListingServiceImpl implements ListingService {
     }
 
     @Override
+    @Transactional
     public DataResult<ListingDetailsResponse> activate(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
         entity.setStatus(ListingStatus.ACTIVE);
+        entity.setExpireDate(LocalDateTime.now().plusMonths(1));
         listingRepository.save(entity);
         ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
