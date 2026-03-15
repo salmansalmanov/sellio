@@ -119,6 +119,7 @@ public class ListingServiceImpl implements ListingService {
             initializeImages(images, entity);
         }
         listingRepository.save(entity);
+        mailService.sendListingUpdatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing updated successfully");
     }
 
