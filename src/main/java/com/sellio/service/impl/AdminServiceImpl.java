@@ -12,6 +12,7 @@ import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
+import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
 import com.sellio.repository.AdminRepository;
@@ -24,7 +25,9 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -38,8 +41,10 @@ public class AdminServiceImpl implements AdminService {
     private final MailService mailService;
     private final AdminMapper adminMapper;
     private final AdminRepository adminRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         AdminRegisterRequest adminRegisterRequest = (AdminRegisterRequest) registerRequest;
         String key = "invite_" + registerRequest.getEmail();
@@ -47,6 +52,7 @@ public class AdminServiceImpl implements AdminService {
         if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
             AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
             entity.setStatus(UserStatus.ACTIVE);
+            entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
             AdminEntity savedEntity = userRepository.save(entity);
             redisTemplate.delete(key);
             mailService.sendRegistrationMail(registerRequest.getEmail());
@@ -56,6 +62,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public void invite(AdminInviteRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AlreadyExistsException("Email already exists");
@@ -94,6 +101,7 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request) {
         AdminEntity entity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
@@ -104,11 +112,14 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
+    @Transactional
     public Result deleteAdminById(UUID id) {
         AdminEntity entity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         adminRepository.delete(entity);
-        mailService.sendDeleteMail(entity.getEmail());
+        if (entity.getRole() != Role.SUPER_ADMIN) {
+            mailService.sendDeleteMail(entity.getEmail());
+        }
         return new SuccessResult("Admin deleted successfully");
     }
 }

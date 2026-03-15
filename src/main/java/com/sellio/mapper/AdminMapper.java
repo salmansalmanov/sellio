@@ -19,7 +19,6 @@ public class AdminMapper {
                 .lastName(request.getLastName())
                 .username(request.getUsername())
                 .email(request.getEmail())
-                .password(request.getPassword())
                 .role(Role.ADMIN)
                 .status(UserStatus.PENDING)
                 .build();

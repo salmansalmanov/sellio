@@ -20,7 +20,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
@@ -32,12 +34,15 @@ public class CustomerServiceImpl implements CustomerService {
     private final UserRepository userRepository;
     private final MailService mailService;
     private final CustomerRepository customerRepository;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
+    @Transactional
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         CustomerRegisterRequest customerRegisterRequest = (CustomerRegisterRequest) registerRequest;
         CustomerEntity customerEntity = customerMapper.registerRequestToEntity(customerRegisterRequest);
         customerEntity.setStatus(UserStatus.ACTIVE);
+        customerEntity.setPassword(passwordEncoder.encode(customerRegisterRequest.getPassword()));
         CustomerEntity savedEntity = userRepository.save(customerEntity);
         mailService.sendRegistrationMail(savedEntity.getEmail());
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(savedEntity), "Customer registered successfully");
@@ -67,6 +72,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request) {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
@@ -77,6 +83,7 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
+    @Transactional
     public Result deleteCustomerById(UUID id) {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));

@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -54,6 +55,7 @@ public class ShopServiceImpl implements ShopService {
     private final RedisTemplate<String, String> redisTemplate;
     private final ApplicationEventPublisher eventPublisher;
     private final RedisUtil redisUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -64,6 +66,7 @@ public class ShopServiceImpl implements ShopService {
 
         initializeAddresses(shopEntity, shopRegisterRequest.getPlaceIds());
         shopEntity.setStatus(UserStatus.ACTIVE);
+        shopEntity.setPassword(passwordEncoder.encode(shopRegisterRequest.getPassword()));
 
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
@@ -139,6 +142,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @Transactional
     public Result deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
