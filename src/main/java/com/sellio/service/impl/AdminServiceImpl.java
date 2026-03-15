@@ -16,6 +16,7 @@ import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
 import com.sellio.repository.AdminRepository;
+import com.sellio.repository.RefreshTokenRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
 import com.sellio.service.concrete.MailService;
@@ -42,6 +43,7 @@ public class AdminServiceImpl implements AdminService {
     private final AdminMapper adminMapper;
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     @Transactional
@@ -70,7 +72,7 @@ public class AdminServiceImpl implements AdminService {
             entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
             AdminEntity savedEntity = userRepository.save(entity);
             redisTemplate.delete(key);
-//            mailService.sendRegistrationMail(registerRequest.getEmail());
+            mailService.sendRegistrationMail(registerRequest.getEmail());
             return new SuccessDataResult<>(adminMapper.toDetailsResponse(savedEntity), "Admin saved successfully");
         }
         throw new InvalidInputException("Invalid token");
@@ -107,7 +109,7 @@ public class AdminServiceImpl implements AdminService {
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
         entity = adminMapper.updateRequestToEntity(request, entity);
         adminRepository.save(entity);
-//        mailService.sendUpdateMail(entity.getEmail());
+        mailService.sendUpdateMail(entity.getEmail());
         return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
     }
 
@@ -116,9 +118,10 @@ public class AdminServiceImpl implements AdminService {
     public Result deleteAdminById(UUID id) {
         AdminEntity entity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        refreshTokenRepository.deleteByUser(entity);
         adminRepository.delete(entity);
         if (entity.getRole() != Role.SUPER_ADMIN) {
-//            mailService.sendDeleteMail(entity.getEmail());
+            mailService.sendDeleteMail(entity.getEmail());
         }
         return new SuccessResult("Admin deleted successfully");
     }

@@ -26,6 +26,7 @@ public class AdminMapper {
 
     public AdminDetailsResponse toDetailsResponse(AdminEntity entity) {
         return AdminDetailsResponse.builder()
+                .id(entity.getId())
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
                 .username(entity.getUsername())

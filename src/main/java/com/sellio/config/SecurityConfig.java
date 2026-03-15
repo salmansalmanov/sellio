@@ -43,52 +43,40 @@ public class SecurityConfig {
                                         "/actuator/**"
                                 ).permitAll()
                                 .requestMatchers("/v1/auth/**").permitAll()
-
                                 .requestMatchers("/v1/admins/invite").hasRole("SUPER_ADMIN")
                                 .requestMatchers("/v1/admins/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-
                                 .requestMatchers(HttpMethod.POST, "/v1/categories").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PUT, "/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/categories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-
-
                                 .requestMatchers(HttpMethod.POST, "/v1/cities/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/cities/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PUT, "/v1/cities/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/cities/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-
                                 .requestMatchers(HttpMethod.GET, "/v1/customers/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/v1/customers/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/customers/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER")
-
                                 .requestMatchers(HttpMethod.POST, "/v1/listings").hasAnyRole("CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.GET, "/v1/listings/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/v1/listings/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PATCH, "/v1/listings/deactivate/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PATCH, "/v1/listings/activate/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
-
                                 .requestMatchers(HttpMethod.POST, "/v1/properties").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/v1/properties/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/properties/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/properties/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
-
                                 .requestMatchers("/v1/property-dependencies/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-
                                 .requestMatchers(HttpMethod.POST, "/v1/property-values").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/property-values/**").hasAnyRole("CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PUT, "/v1/property-values/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/property-values/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
-
                                 .requestMatchers(HttpMethod.GET, "/v1/shops/**").permitAll()
                                 .requestMatchers(HttpMethod.PUT, "/v1/shops/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "SHOP")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/shops/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "SHOP")
-
                                 .requestMatchers(HttpMethod.POST, "/v1/subcategories").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
-
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))

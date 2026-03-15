@@ -23,6 +23,8 @@ import com.sellio.service.abstraction.UserService;
 import com.sellio.util.JwtUtil;
 import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
+import org.hibernate.validator.engine.HibernateValidatorEnhancedBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -74,7 +76,7 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity userEntity = userRepository.findByIdentifier(loginRequest.getUsernameOrEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) userEntity).getUsername();
+        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) Hibernate.unproxy(userEntity)).getUsername();
         String accessToken = jwtUtil.generateAccessToken(principal, userEntity.getRole());
         UUID refreshToken = UUID.randomUUID();
 
@@ -99,7 +101,7 @@ public class AuthServiceImpl implements AuthService {
         jwtUtil.checkRefreshToken(refreshTokenEntity);
 
         UserEntity userEntity = refreshTokenEntity.getUser();
-        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) userEntity).getUsername();
+        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) Hibernate.unproxy(userEntity)).getUsername();
         String newAccessToken = jwtUtil.generateAccessToken(principal, userEntity.getRole());
         UUID newRefreshToken = UUID.randomUUID();
 
