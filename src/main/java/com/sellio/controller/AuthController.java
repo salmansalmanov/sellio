@@ -1,6 +1,10 @@
 package com.sellio.controller;
 
+import com.sellio.model.dto.request.LoginRequest;
 import com.sellio.model.dto.request.RegisterRequest;
+import com.sellio.model.dto.request.TokenRefreshRequest;
+import com.sellio.model.dto.response.core.LoginResponse;
+import com.sellio.model.dto.response.core.TokenRefreshResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.service.abstraction.AuthService;
@@ -29,7 +33,7 @@ public class AuthController {
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
     )
     @Operation(
-            description = "Register API",
+            summary = "Register API",
             responses = {
                     @ApiResponse(description = "Success", responseCode = "201")
             }
@@ -41,5 +45,27 @@ public class AuthController {
             @RequestParam String role
     ) throws IOException {
         return new ResponseEntity<>(authService.register(request, role, logo, banner), HttpStatus.CREATED);
+    }
+
+    @PostMapping("/login")
+    @Operation(
+            summary = "Login API",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<DataResult<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
+        return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
+    }
+
+    @PostMapping("/refresh-token")
+    @Operation(
+            summary = "Refresh access and refresh token",
+            responses = {
+                    @ApiResponse(description = "Success", responseCode = "200")
+            }
+    )
+    public ResponseEntity<DataResult<TokenRefreshResponse>> refreshToken(@RequestBody @Valid TokenRefreshRequest request) {
+        return new ResponseEntity<>(authService.refreshToken(request), HttpStatus.OK);
     }
 }

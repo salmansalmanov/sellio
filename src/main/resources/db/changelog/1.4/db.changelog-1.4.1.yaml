@@ -1,0 +1,9 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.4.1-rename-revoked-to-is_revoked-on-refresh_tokens
+      author: salmansalmanov
+      changes:
+        - renameColumn:
+            tableName: refresh_tokens
+            oldColumnName: revoked
+            newColumnName: is_revoked

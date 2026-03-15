@@ -22,7 +22,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/v1/values")
+@RequestMapping("/v1/property-values")
 @Tag(name = "Property Value Controller", description = "Property Value APIs")
 public class PropertyValueController {
     private final PropertyValueService propertyValueService;

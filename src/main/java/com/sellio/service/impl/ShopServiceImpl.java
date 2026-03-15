@@ -24,17 +24,21 @@ import com.sellio.service.abstraction.ShopService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.RedisUtil;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -50,6 +54,8 @@ public class ShopServiceImpl implements ShopService {
     private final ShopRepository shopRepository;
     private final RedisTemplate<String, String> redisTemplate;
     private final ApplicationEventPublisher eventPublisher;
+    private final RedisUtil redisUtil;
+    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -60,6 +66,7 @@ public class ShopServiceImpl implements ShopService {
 
         initializeAddresses(shopEntity, shopRegisterRequest.getPlaceIds());
         shopEntity.setStatus(UserStatus.ACTIVE);
+        shopEntity.setPassword(passwordEncoder.encode(shopRegisterRequest.getPassword()));
 
         ShopEntity savedEntity = userRepository.save(shopEntity);
         mailService.sendRegistrationMail(shopEntity.getEmail());
@@ -73,6 +80,8 @@ public class ShopServiceImpl implements ShopService {
         eventPublisher.publishEvent(
                 new ImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
         );
+        String key = "shop_view_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(key, String.valueOf(0));
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
@@ -92,12 +101,7 @@ public class ShopServiceImpl implements ShopService {
                 shopMapper.toResponses(shopPage.getContent())
         );
         for (ShopResponse shopResponse : shopResponsePageData.getContent()) {
-            Object viewCount = redisTemplate.opsForValue().get(shopResponse.getId().toString());
-            if (viewCount == null) {
-                redisTemplate.opsForValue().set(shopResponse.getId().toString(), String.valueOf(0));
-            } else {
-                shopResponse.setViewCount(Long.parseLong(String.valueOf(viewCount)));
-            }
+            shopResponse.setViewCount(redisUtil.getViewCount(shopResponse.getId(), DomainType.SHOP));
         }
 
         return new SuccessDataResult<>(shopResponsePageData, "Shops found successfully");
@@ -109,17 +113,7 @@ public class ShopServiceImpl implements ShopService {
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
         ShopDetailsResponse shopDetailsResponse = shopMapper.toDetailsResponse(shopEntity);
-        Object viewCount = redisTemplate.opsForValue().get(shopEntity.getId().toString());
-
-        if (viewCount == null) {
-            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(1));
-            shopDetailsResponse.setViewCount(1L);
-        } else {
-            long longViewCount = Long.parseLong(viewCount.toString()) + 1;
-            redisTemplate.opsForValue().set(shopEntity.getId().toString(), String.valueOf(longViewCount));
-            shopDetailsResponse.setViewCount(longViewCount);
-        }
-
+        shopDetailsResponse.setViewCount(redisUtil.initializeViewCount(id, DomainType.SHOP));
         return new SuccessDataResult<>(shopDetailsResponse, "Shop found successfully");
     }
 
@@ -148,6 +142,7 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
+    @Transactional
     public Result deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));

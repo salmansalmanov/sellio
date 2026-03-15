@@ -7,19 +7,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-import java.util.List;
 import java.util.UUID;
 
 @Setter
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PropertyCreateRequest {
+public class TokenRefreshRequest {
 
-    @NotBlank(message = "Property name must not be blank")
-    private String name;
-
-    @NotNull(message = "Subcategory ID must not be null")
-    private UUID subcategoryId;
-    private List<PropertyValueCreateRequest> values;
+    @NotNull(message = "Refresh token must not be null")
+    private UUID refreshToken;
 }

@@ -1,6 +1,6 @@
-package com.sellio.validaiton.validator;
+package com.sellio.validation.validator;
 
-import com.sellio.validaiton.annotation.PhoneNumber;
+import com.sellio.validation.annotation.PhoneNumber;
 import jakarta.validation.ConstraintValidator;
 import jakarta.validation.ConstraintValidatorContext;
 

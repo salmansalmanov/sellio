@@ -18,7 +18,6 @@ public class ShopMapper {
         return ShopEntity.builder()
                 .name(request.getName())
                 .email(request.getEmail())
-                .password(request.getPassword())
                 .description(request.getDescription())
                 .pricingPlan(request.getPricingPlan())
                 .phoneNumbers(request.getPhoneNumbers())

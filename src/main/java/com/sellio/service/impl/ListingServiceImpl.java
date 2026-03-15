@@ -18,6 +18,7 @@ import com.sellio.service.abstraction.ListingService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -48,51 +49,27 @@ public class ListingServiceImpl implements ListingService {
     private final ApplicationEventPublisher eventPublisher;
     private final PropertyValueRepository propertyValueRepository;
     private final CloudinaryService cloudinaryService;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional
     @CleanupCloudinary
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
-        UserEntity owner = userRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getOwnerId()));
-
         ListingEntity listingEntity = listingMapper.createRequestToEntity(request);
-        listingEntity.setOwner(owner);
-
-        CityEntity cityEntity = cityRepository.findById(request.getCityId())
-                .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
-        listingEntity.setCity(cityEntity);
-
-        SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(request.getSubcategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
-        listingEntity.setSubcategory(subcategoryEntity);
+        initializeEntities(listingEntity, request);
 
         List<PropertyValueEntity> selectedValues = new ArrayList<>();
         if (request.getPropertyValueIds() != null && !request.getPropertyValueIds().isEmpty()) {
             selectedValues = propertyValueRepository.findAllById(request.getPropertyValueIds());
         }
 
-        String title;
-        if (!subcategoryEntity.getIsTitleRequired()) {
-            title = generateTitle(selectedValues);
-        } else {
-            title = request.getTitle();
-        }
-        listingEntity.setTitle(title);
+        initializeTitle(selectedValues, listingEntity, request);
+        initializeListingProperties(request, listingEntity, selectedValues);
 
-        if (request.getPropertyValueIds() != null) {
-            for (PropertyValueEntity propertyValue : selectedValues) {
-                ListingPropertyEntity listingPropertyEntity = ListingPropertyEntity.builder()
-                        .listing(listingEntity)
-                        .value(propertyValue)
-                        .build();
-                listingEntity.getListingProperties().add(listingPropertyEntity);
-            }
-        }
         ListingEntity savedEntity = listingRepository.save(listingEntity);
         initializeImages(images, savedEntity);
 
-        mailService.sendListingCreatedMail(owner.getEmail());
+        mailService.sendListingCreatedMail(savedEntity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(savedEntity), "Listing created successfully");
     }
 
@@ -100,7 +77,10 @@ public class ListingServiceImpl implements ListingService {
     public DataResult<ListingDetailsResponse> getById(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing found successfully");
+
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
+        response.setViewCount(redisUtil.initializeViewCount(id, DomainType.LISTING));
+        return new SuccessDataResult<>(response, "Listing found successfully");
     }
 
     @Override
@@ -139,17 +119,33 @@ public class ListingServiceImpl implements ListingService {
             initializeImages(images, entity);
         }
         listingRepository.save(entity);
+        mailService.sendListingUpdatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing updated successfully");
     }
 
     @Override
-    public Result delete(UUID id) {
+    public DataResult<ListingDetailsResponse> deactivate(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        entity.setStatus(ListingStatus.DELETED);
+        entity.setStatus(ListingStatus.INACTIVE);
         entity.setDeletedAt(LocalDateTime.now());
+        ListingEntity savedEntity = listingRepository.save(entity);
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(savedEntity);
+        response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
+        mailService.sendListingExpiredMail(entity.getOwner().getEmail());
+        return new SuccessDataResult<>(response, "Listing deactivated successfully");
+    }
+
+    @Override
+    public DataResult<ListingDetailsResponse> activate(UUID id) {
+        ListingEntity entity = listingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
+        entity.setStatus(ListingStatus.ACTIVE);
         listingRepository.save(entity);
-        return new SuccessResult("Listing added to expired list");
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
+        response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
+        mailService.sendListingActivatedMail(entity.getOwner().getEmail());
+        return new SuccessDataResult<>(response, "Listing activated successfully");
     }
 
     private String generateTitle(List<PropertyValueEntity> propertyValues) {
@@ -171,6 +167,42 @@ public class ListingServiceImpl implements ListingService {
                 eventPublisher.publishEvent(
                         new ImageUploadEvent(entity.getId(), image.getBytes(), type, DomainType.LISTING)
                 );
+            }
+        }
+    }
+
+    private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) {
+        UserEntity owner = userRepository.findById(request.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getOwnerId()));
+        listingEntity.setOwner(owner);
+
+        CityEntity cityEntity = cityRepository.findById(request.getCityId())
+                .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
+        listingEntity.setCity(cityEntity);
+
+        SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(request.getSubcategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
+        listingEntity.setSubcategory(subcategoryEntity);
+    }
+
+    private void initializeTitle(List<PropertyValueEntity> propertyValues, ListingEntity listingEntity, ListingCreateRequest request) {
+        String title;
+        if (!listingEntity.getSubcategory().getIsTitleRequired()) {
+            title = generateTitle(propertyValues);
+        } else {
+            title = request.getTitle();
+        }
+        listingEntity.setTitle(title);
+    }
+
+    private void initializeListingProperties(ListingCreateRequest request, ListingEntity listingEntity, List<PropertyValueEntity> propertyValues) {
+        if (request.getPropertyValueIds() != null) {
+            for (PropertyValueEntity propertyValue : propertyValues) {
+                ListingPropertyEntity listingPropertyEntity = ListingPropertyEntity.builder()
+                        .listing(listingEntity)
+                        .value(propertyValue)
+                        .build();
+                listingEntity.getListingProperties().add(listingPropertyEntity);
             }
         }
     }

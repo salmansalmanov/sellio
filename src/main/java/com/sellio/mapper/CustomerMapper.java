@@ -21,7 +21,6 @@ public class CustomerMapper {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
-                .password(request.getPassword())
                 .phoneNumbers(Set.of(request.getPhoneNumber()))
                 .pricingPlan(request.getPricingPlan())
                 .status(UserStatus.PENDING)
