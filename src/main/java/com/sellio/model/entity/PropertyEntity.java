@@ -21,7 +21,6 @@ import java.util.List;
 )
 public class PropertyEntity extends BaseEntity {
     private String name;
-    private Boolean isRequired;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "subcategory_id")

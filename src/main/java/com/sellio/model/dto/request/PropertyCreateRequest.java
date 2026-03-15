@@ -19,9 +19,6 @@ public class PropertyCreateRequest {
     @NotBlank(message = "Property name must not be blank")
     private String name;
 
-    @NotNull(message = "isRequired must not be null")
-    private Boolean isRequired;
-
     @NotNull(message = "Subcategory ID must not be null")
     private UUID subcategoryId;
     private List<PropertyValueCreateRequest> values;
