@@ -23,6 +23,6 @@ public class RefreshTokenEntity extends BaseEntity {
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     private UserEntity user;
-    private Boolean revoked;
+    private Boolean isRevoked;
     private LocalDateTime expireDate;
 }

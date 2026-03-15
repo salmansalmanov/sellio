@@ -6,7 +6,9 @@ import com.sellio.factory.concrete.UserServiceFactory;
 import com.sellio.mapper.RefreshTokenMapper;
 import com.sellio.model.dto.request.LoginRequest;
 import com.sellio.model.dto.request.RegisterRequest;
+import com.sellio.model.dto.request.TokenRefreshRequest;
 import com.sellio.model.dto.response.core.LoginResponse;
+import com.sellio.model.dto.response.core.TokenRefreshResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
 import com.sellio.model.entity.RefreshTokenEntity;
@@ -80,12 +82,32 @@ public class AuthServiceImpl implements AuthService {
                 .map(foundRefreshTokenEntity -> {
                     foundRefreshTokenEntity.setRefreshToken(refreshToken);
                     foundRefreshTokenEntity.setExpireDate(LocalDateTime.now().plus(refreshTokenExpiration, ChronoUnit.MILLIS));
-                    foundRefreshTokenEntity.setRevoked(false);
+                    foundRefreshTokenEntity.setIsRevoked(false);
                     return foundRefreshTokenEntity;
                 })
                 .orElseGet(() -> refreshTokenMapper.toEntity(userEntity, refreshToken));
         refreshTokenRepository.save(refreshTokenEntity);
         LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken);
         return new SuccessDataResult<>(loginResponse, "Login successful");
+    }
+
+    @Override
+    @Transactional
+    public DataResult<TokenRefreshResponse> refreshToken(TokenRefreshRequest request) {
+        RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByRefreshToken(request.getRefreshToken())
+                .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
+        jwtUtil.checkRefreshToken(refreshTokenEntity);
+
+        UserEntity userEntity = refreshTokenEntity.getUser();
+        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) userEntity).getUsername();
+        String newAccessToken = jwtUtil.generateAccessToken(principal, userEntity.getRole());
+        UUID newRefreshToken = UUID.randomUUID();
+
+        refreshTokenEntity.setRefreshToken(newRefreshToken);
+        refreshTokenEntity.setExpireDate(LocalDateTime.now().plus(refreshTokenExpiration, ChronoUnit.MILLIS));
+        refreshTokenRepository.save(refreshTokenEntity);
+
+        TokenRefreshResponse refreshTokenResponse = new TokenRefreshResponse(newAccessToken, newRefreshToken);
+        return new SuccessDataResult<>(refreshTokenResponse, "Refresh token successful");
     }
 }

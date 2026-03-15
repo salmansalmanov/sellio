@@ -19,7 +19,7 @@ public class RefreshTokenMapper {
         return RefreshTokenEntity.builder()
                 .refreshToken(refreshToken)
                 .user(userEntity)
-                .revoked(false)
+                .isRevoked(false)
                 .expireDate(LocalDateTime.now().plus(refreshTokenExpiration, ChronoUnit.MILLIS))
                 .build();
     }
