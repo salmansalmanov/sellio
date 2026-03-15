@@ -55,46 +55,21 @@ public class ListingServiceImpl implements ListingService {
     @Transactional
     @CleanupCloudinary
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
-        UserEntity owner = userRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getOwnerId()));
-
         ListingEntity listingEntity = listingMapper.createRequestToEntity(request);
-        listingEntity.setOwner(owner);
-
-        CityEntity cityEntity = cityRepository.findById(request.getCityId())
-                .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
-        listingEntity.setCity(cityEntity);
-
-        SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(request.getSubcategoryId())
-                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
-        listingEntity.setSubcategory(subcategoryEntity);
+        initializeEntities(listingEntity, request);
 
         List<PropertyValueEntity> selectedValues = new ArrayList<>();
         if (request.getPropertyValueIds() != null && !request.getPropertyValueIds().isEmpty()) {
             selectedValues = propertyValueRepository.findAllById(request.getPropertyValueIds());
         }
 
-        String title;
-        if (!subcategoryEntity.getIsTitleRequired()) {
-            title = generateTitle(selectedValues);
-        } else {
-            title = request.getTitle();
-        }
-        listingEntity.setTitle(title);
+        initializeTitle(selectedValues, listingEntity, request);
+        initializeListingProperties(request, listingEntity, selectedValues);
 
-        if (request.getPropertyValueIds() != null) {
-            for (PropertyValueEntity propertyValue : selectedValues) {
-                ListingPropertyEntity listingPropertyEntity = ListingPropertyEntity.builder()
-                        .listing(listingEntity)
-                        .value(propertyValue)
-                        .build();
-                listingEntity.getListingProperties().add(listingPropertyEntity);
-            }
-        }
         ListingEntity savedEntity = listingRepository.save(listingEntity);
         initializeImages(images, savedEntity);
 
-        mailService.sendListingCreatedMail(owner.getEmail());
+        mailService.sendListingCreatedMail(savedEntity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(savedEntity), "Listing created successfully");
     }
 
@@ -187,6 +162,42 @@ public class ListingServiceImpl implements ListingService {
                 eventPublisher.publishEvent(
                         new ImageUploadEvent(entity.getId(), image.getBytes(), type, DomainType.LISTING)
                 );
+            }
+        }
+    }
+
+    private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) {
+        UserEntity owner = userRepository.findById(request.getOwnerId())
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getOwnerId()));
+        listingEntity.setOwner(owner);
+
+        CityEntity cityEntity = cityRepository.findById(request.getCityId())
+                .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
+        listingEntity.setCity(cityEntity);
+
+        SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(request.getSubcategoryId())
+                .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
+        listingEntity.setSubcategory(subcategoryEntity);
+    }
+
+    private void initializeTitle(List<PropertyValueEntity> propertyValues, ListingEntity listingEntity, ListingCreateRequest request) {
+        String title;
+        if (!listingEntity.getSubcategory().getIsTitleRequired()) {
+            title = generateTitle(propertyValues);
+        } else {
+            title = request.getTitle();
+        }
+        listingEntity.setTitle(title);
+    }
+
+    private void initializeListingProperties(ListingCreateRequest request, ListingEntity listingEntity, List<PropertyValueEntity> propertyValues) {
+        if (request.getPropertyValueIds() != null) {
+            for (PropertyValueEntity propertyValue : propertyValues) {
+                ListingPropertyEntity listingPropertyEntity = ListingPropertyEntity.builder()
+                        .listing(listingEntity)
+                        .value(propertyValue)
+                        .build();
+                listingEntity.getListingProperties().add(listingPropertyEntity);
             }
         }
     }
