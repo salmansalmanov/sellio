@@ -1,0 +1,13 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.4.2-add-expire_date-to-listings
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: listings
+            columns:
+              - column:
+                  name: expire_date
+                  type: TIMESTAMP
+                  constraints:
+                    nullable: false

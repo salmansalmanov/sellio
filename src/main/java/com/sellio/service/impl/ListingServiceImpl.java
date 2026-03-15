@@ -65,7 +65,7 @@ public class ListingServiceImpl implements ListingService {
 
         initializeTitle(selectedValues, listingEntity, request);
         initializeListingProperties(request, listingEntity, selectedValues);
-
+        listingEntity.setStatus(ListingStatus.ACTIVE);
         ListingEntity savedEntity = listingRepository.save(listingEntity);
         initializeImages(images, savedEntity);
 
@@ -118,6 +118,7 @@ public class ListingServiceImpl implements ListingService {
             cloudinaryService.forceRemoveFolder("listings/" + entity.getId());
             initializeImages(images, entity);
         }
+        entity.setExpireDate(LocalDateTime.now().plusMonths(1));
         listingRepository.save(entity);
         mailService.sendListingUpdatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing updated successfully");
