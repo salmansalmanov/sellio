@@ -130,6 +130,7 @@ public class ListingServiceImpl implements ListingService {
         entity.setStatus(ListingStatus.DELETED);
         entity.setDeletedAt(LocalDateTime.now());
         listingRepository.save(entity);
+        mailService.sendListingExpiredMail(entity.getOwner().getEmail());
         return new SuccessResult("Listing added to expired list");
     }
 

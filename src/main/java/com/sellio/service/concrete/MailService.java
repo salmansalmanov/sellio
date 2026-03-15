@@ -142,4 +142,24 @@ public class MailService {
             throw new MailException("Mail exception: " + e.getMessage());
         }
     }
+
+    @Async
+    public void sendListingExpiredMail(String to) {
+        try {
+            ClassPathResource resource = new ClassPathResource("templates/listing-expire.html");
+            String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
+
+            MimeMessage mimeMessage = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+
+            helper.setTo(to);
+            helper.setSubject("Elan deaktiv olundu");
+            helper.setFrom(from);
+            helper.setText(htmlContent, true);
+
+            mailSender.send(mimeMessage);
+        } catch (Exception e) {
+            throw new MailException("Mail exception: " + e.getMessage());
+        }
+    }
 }
