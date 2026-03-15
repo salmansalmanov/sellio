@@ -42,6 +42,35 @@ dependencies {
 
     // JUnit
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
+    // Liquibase
+    implementation 'org.springframework.boot:spring-boot-starter-liquibase'
+
+    // Swagger
+    implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:3.0.1'
+
+    // Cloudinary
+    implementation 'com.cloudinary:cloudinary-http44:1.39.0'
+
+    // Validation
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
+
+    // AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop:3.5.11'
+
+    // WebFlux
+    implementation 'org.springframework.boot:spring-boot-starter-webflux'
+    testImplementation 'io.projectreactor:reactor-test'
+
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
+    testImplementation 'org.springframework.security:spring-security-test'
+
+    // Mail
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
+
+    // Redis
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 }
 
 tasks.named('test') {

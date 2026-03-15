@@ -1,0 +1,7 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.0-drop-super_admins-table
+      author: salmansalmanov
+      changes:
+        - dropTable:
+            tableName: super_admins

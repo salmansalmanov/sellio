@@ -1,0 +1,47 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.2.7-create-property_dependencies-table
+      author: salmansalmanov
+      changes:
+        - createTable:
+            tableName: property_dependencies
+            columns:
+              - column:
+                  name: id
+                  type: UUID
+                  constraints:
+                    primaryKey: true
+                    nullable: false
+              - column:
+                  name: parent_value_id
+                  type: UUID
+              - column:
+                  name: child_value_id
+                  type: UUID
+              - column:
+                  name: created_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: updated_at
+                  type: TIMESTAMP
+                  defaultValueComputed: CURRENT_TIMESTAMP
+                  constraints:
+                    nullable: false
+              - column:
+                  name: deleted_at
+                  type: TIMESTAMP
+        - addForeignKeyConstraint:
+            baseTableName: property_dependencies
+            baseColumnNames: parent_value_id
+            referencedTableName: property_values
+            referencedColumnNames: id
+            constraintName: property_dependencies_parent_value_id_property_values_id
+        - addForeignKeyConstraint:
+            baseTableName: property_dependencies
+            baseColumnNames: child_value_id
+            referencedTableName: property_values
+            referencedColumnNames: id
+            constraintName: property_dependencies_child_value_id_property_values_id

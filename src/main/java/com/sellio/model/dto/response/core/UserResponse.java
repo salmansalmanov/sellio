@@ -1,0 +1,19 @@
+package com.sellio.model.dto.response.core;
+
+import com.sellio.model.enums.UserStatus;
+import com.sellio.model.enums.Role;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.SuperBuilder;
+
+@Setter
+@Getter
+@SuperBuilder
+@NoArgsConstructor
+@AllArgsConstructor
+public abstract class UserResponse {
+    private UserStatus status;
+    private Role role;
+}

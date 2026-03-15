@@ -1,0 +1,25 @@
+databaseChangeLog:
+  - changeSet:
+      id: add-city_id-column-to-listings
+      author: salmansalmanov
+      changes:
+        - addColumn:
+            tableName: listings
+            columns:
+              - column:
+                  name: city_id
+                  type: UUID
+                  constraints:
+                    nullable: false
+        - addForeignKeyConstraint:
+            baseTableName: listings
+            baseColumnNames: city_id
+            referencedTableName: cities
+            referencedColumnNames: id
+            constraintName: fk_listings_city_id_cities_id
+        - createIndex:
+            tableName: listings
+            indexName: idx_listings_city_id
+            columns:
+              - column:
+                  name: city_id

@@ -1,0 +1,17 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.1.6-change-place_id-type-to-varchar
+      author: salmansalmanov
+      changes:
+        - dropColumn:
+            tableName: addresses
+            columnName: place_id
+        - addColumn:
+            tableName: addresses
+            columns:
+              - column:
+                  name: place_id
+                  type: VARCHAR
+                  constraints:
+                    unique: true
+                    nullable: false
