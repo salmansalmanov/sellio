@@ -6,6 +6,7 @@ import lombok.*;
 import lombok.experimental.SuperBuilder;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -61,4 +62,5 @@ public class ListingEntity extends BaseEntity {
     )
     @Builder.Default
     private List<ListingPropertyEntity> listingProperties = new ArrayList<>();
+    private LocalDateTime expireDate;
 }

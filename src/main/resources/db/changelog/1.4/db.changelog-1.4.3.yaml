@@ -1,0 +1,11 @@
+databaseChangeLog:
+  - changeSet:
+      id: 1.4.3-create-index-for-expire_date-on-listings
+      author: salmansalmanov
+      changes:
+        - createIndex:
+            tableName: listings
+            columns:
+              - column:
+                  name: expire_date
+            indexName: idx_expire_date

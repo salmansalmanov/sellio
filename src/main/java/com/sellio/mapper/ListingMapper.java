@@ -5,11 +5,15 @@ import com.sellio.model.dto.request.ListingUpdateRequest;
 import com.sellio.model.dto.response.core.ListingDetailsResponse;
 import com.sellio.model.dto.response.core.ListingResponse;
 import com.sellio.model.entity.*;
+import com.sellio.model.enums.ListingStatus;
 import com.sellio.model.enums.Role;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +35,8 @@ public class ListingMapper {
                 .isNew(request.getIsNew())
                 .hasDelivery(request.getHasDelivery())
                 .listingProperties(new ArrayList<>())
+                .expireDate(LocalDateTime.now().plusMonths(1))
+                .status(ListingStatus.PENDING)
                 .build();
     }
 
