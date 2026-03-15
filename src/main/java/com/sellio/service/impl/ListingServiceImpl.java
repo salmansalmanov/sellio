@@ -18,12 +18,14 @@ import com.sellio.service.abstraction.ListingService;
 import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
+import com.sellio.util.RedisUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -48,6 +50,8 @@ public class ListingServiceImpl implements ListingService {
     private final ApplicationEventPublisher eventPublisher;
     private final PropertyValueRepository propertyValueRepository;
     private final CloudinaryService cloudinaryService;
+    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisUtil redisUtil;
 
     @Override
     @Transactional
@@ -100,7 +104,10 @@ public class ListingServiceImpl implements ListingService {
     public DataResult<ListingDetailsResponse> getById(UUID id) {
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing found successfully");
+
+        ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
+        response.setViewCount(redisUtil.initializeViewCount(id, DomainType.LISTING));
+        return new SuccessDataResult<>(response, "Listing found successfully");
     }
 
     @Override
