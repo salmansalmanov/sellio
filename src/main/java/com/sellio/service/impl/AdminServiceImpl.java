@@ -12,6 +12,7 @@ import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
+import com.sellio.model.entity.UserEntity;
 import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
@@ -20,12 +21,14 @@ import com.sellio.repository.RefreshTokenRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AdminService;
 import com.sellio.service.concrete.MailService;
+import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -44,6 +47,7 @@ public class AdminServiceImpl implements AdminService {
     private final AdminRepository adminRepository;
     private final PasswordEncoder passwordEncoder;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SecurityUtil securityUtil;
 
     @Override
     @Transactional
@@ -105,24 +109,39 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request) {
-        AdminEntity entity = adminRepository.findById(id)
+        String username = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity currentUser = userRepository.findByIdentifier(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        AdminEntity targetEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
-        entity = adminMapper.updateRequestToEntity(request, entity);
-        adminRepository.save(entity);
-        mailService.sendUpdateMail(entity.getEmail());
-        return new SuccessDataResult<>(adminMapper.toDetailsResponse(entity), "Admin updated successfully");
+
+        if (currentUser.getId().equals(targetEntity.getId()) || currentUser.getRole().equals(Role.SUPER_ADMIN)) {
+            targetEntity = adminMapper.updateRequestToEntity(request, targetEntity);
+            adminRepository.save(targetEntity);
+            mailService.sendUpdateMail(targetEntity.getEmail());
+            return new SuccessDataResult<>(adminMapper.toDetailsResponse(targetEntity), "Admin updated successfully");
+        }
+        throw new AccessDeniedException("Access denied");
     }
 
     @Override
     @Transactional
     public Result deleteAdminById(UUID id) {
-        AdminEntity entity = adminRepository.findById(id)
+        String username = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity currentUser = userRepository.findByIdentifier(username)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+        AdminEntity targetEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
-        refreshTokenRepository.deleteByUser(entity);
-        adminRepository.delete(entity);
-        if (entity.getRole() != Role.SUPER_ADMIN) {
-            mailService.sendDeleteMail(entity.getEmail());
+
+        if (currentUser.getId().equals(targetEntity.getId()) || currentUser.getRole().equals(Role.SUPER_ADMIN)) {
+            refreshTokenRepository.deleteByUser(targetEntity);
+            adminRepository.delete(targetEntity);
+            if (targetEntity.getRole() != Role.SUPER_ADMIN) {
+                mailService.sendDeleteMail(targetEntity.getEmail());
+            }
+            return new SuccessResult("Admin deleted successfully");
         }
-        return new SuccessResult("Admin deleted successfully");
+        throw new AccessDeniedException("Access denied");
     }
 }
