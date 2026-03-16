@@ -20,25 +20,21 @@ import com.sellio.util.FileUtil;
 import com.sellio.util.RedisUtil;
 import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
-import lombok.experimental.Tolerate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-
-import org.springframework.security.access.AccessDeniedException;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -184,6 +180,16 @@ public class ListingServiceImpl implements ListingService {
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
         mailService.sendListingActivatedMail(entity.getOwner().getEmail());
         return new SuccessDataResult<>(response, "Listing activated successfully");
+    }
+
+    @Override
+    public Result delete(UUID id) {
+        ListingEntity entity = listingRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
+        redisTemplate.delete("listing_view_count_" + entity.getId());
+        redisTemplate.opsForValue().decrement("listing_count_" + entity.getOwner().getId());
+        listingRepository.delete(entity);
+        return new SuccessResult("Listing deleted successfully");
     }
 
     private String generateTitle(List<PropertyValueEntity> propertyValues) {
