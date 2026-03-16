@@ -1,11 +1,14 @@
 package com.sellio.model.dto.request;
 
+import com.sellio.validation.annotation.Username;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.UUID;
 
 @Setter
 @Getter
@@ -21,8 +24,7 @@ public class AdminRegisterRequest extends RegisterRequest {
     @Size(min = 3, max = 20, message = "Last name must be between 3 and 20")
     private String lastName;
 
-    @NotBlank(message = "Username cannot be blank")
-    @Size(min = 3, max = 20, message = "Username must be between 3 and 20")
+    @Username
     private String username;
 
     @NotBlank(message = "Token must not be blank")

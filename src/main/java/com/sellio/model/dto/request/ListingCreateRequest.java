@@ -18,9 +18,6 @@ import java.util.UUID;
 @AllArgsConstructor
 public class ListingCreateRequest {
 
-    @NotNull(message = "Owner ID must not be null")
-    private UUID ownerId;
-
     @NotNull(message = "Subcategory must not be null")
     private UUID subcategoryId;
     private List<UUID> propertyValueIds;
