@@ -2,6 +2,7 @@ package com.sellio.service.impl;
 
 import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.event.ImageUploadEvent;
+import com.sellio.exception.custom.ListingLimitException;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ListingMapper;
 import com.sellio.model.dto.request.ListingCreateRequest;
@@ -9,10 +10,7 @@ import com.sellio.model.dto.request.ListingUpdateRequest;
 import com.sellio.model.dto.response.core.ListingDetailsResponse;
 import com.sellio.model.dto.response.core.ListingResponse;
 import com.sellio.model.entity.*;
-import com.sellio.model.enums.DomainType;
-import com.sellio.model.enums.ImageType;
-import com.sellio.model.enums.ListingStatus;
-import com.sellio.model.enums.Role;
+import com.sellio.model.enums.*;
 import com.sellio.model.result.*;
 import com.sellio.repository.*;
 import com.sellio.service.abstraction.ListingService;
@@ -22,6 +20,7 @@ import com.sellio.util.FileUtil;
 import com.sellio.util.RedisUtil;
 import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.experimental.Tolerate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -39,6 +38,7 @@ import org.springframework.security.access.AccessDeniedException;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -63,7 +63,13 @@ public class ListingServiceImpl implements ListingService {
     @Transactional
     @CleanupCloudinary
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
+        String email = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity owner = userRepository.findByIdentifier(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
+
         ListingEntity listingEntity = listingMapper.createRequestToEntity(request);
+        listingEntity.setOwner(owner);
+        initializeListingCount(owner);
         initializeEntities(listingEntity, request);
 
         List<PropertyValueEntity> selectedValues = new ArrayList<>();
@@ -204,11 +210,6 @@ public class ListingServiceImpl implements ListingService {
     }
 
     private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) throws AccessDeniedException {
-        String email = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity owner = userRepository.findByIdentifier(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
-        listingEntity.setOwner(owner);
-
         CityEntity cityEntity = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
         listingEntity.setCity(cityEntity);
@@ -246,6 +247,24 @@ public class ListingServiceImpl implements ListingService {
 
         if (!isOwner && !isAdmin) {
             throw new AccessDeniedException("You are not allowed to access this resource");
+        }
+    }
+
+    private void initializeListingCount(UserEntity userEntity) {
+        PricingPlan pricingPlan = userEntity.getPricingPlan();
+        Long maxListingCount;
+        String key = "listing_count_" + userEntity.getId();
+
+        if (PricingPlan.STANDARD.equals(pricingPlan)) {
+            maxListingCount = userEntity.getRole() == Role.CUSTOMER ? 3L : 500L;
+        } else {
+            maxListingCount = userEntity.getRole() == Role.CUSTOMER ? 10L : 5000L;
+        }
+
+        Long currentListingCount = redisTemplate.opsForValue().increment(key);
+        if (currentListingCount > maxListingCount) {
+            redisTemplate.opsForValue().decrement(key);
+            throw new ListingLimitException("Listing limit exceeded for " + pricingPlan);
         }
     }
 }

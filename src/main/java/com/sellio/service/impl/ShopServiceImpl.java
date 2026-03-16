@@ -80,8 +80,11 @@ public class ShopServiceImpl implements ShopService {
         eventPublisher.publishEvent(
                 new ImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
         );
-        String key = "shop_view_count_" + savedEntity.getId();
-        redisTemplate.opsForValue().set(key, String.valueOf(0));
+        String viewCount = "shop_view_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(viewCount, String.valueOf(0));
+
+        String listingCount = "listing_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(listingCount, "0");
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }

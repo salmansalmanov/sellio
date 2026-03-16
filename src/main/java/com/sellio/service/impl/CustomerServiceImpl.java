@@ -20,6 +20,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,6 +36,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final MailService mailService;
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RedisTemplate<String, String> redisTemplate;
 
     @Override
     @Transactional
@@ -44,6 +46,8 @@ public class CustomerServiceImpl implements CustomerService {
         customerEntity.setStatus(UserStatus.ACTIVE);
         customerEntity.setPassword(passwordEncoder.encode(customerRegisterRequest.getPassword()));
         CustomerEntity savedEntity = userRepository.save(customerEntity);
+        String key = "listing_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(key, "0");
         mailService.sendRegistrationMail(savedEntity.getEmail());
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(savedEntity), "Customer registered successfully");
     }

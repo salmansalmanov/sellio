@@ -30,6 +30,7 @@ public class SchedulerService {
         if (!inactiveListings.isEmpty()) {
             for (ListingEntity listing : inactiveListings) {
                 redisTemplate.delete("listing_view_count_" + listing.getId());
+                redisTemplate.delete("listing_count_" + listing.getOwner().getId());
             }
             listingRepository.deleteAll(inactiveListings);
         }
@@ -63,6 +64,7 @@ public class SchedulerService {
         if (!expiredListings.isEmpty()) {
             for (ListingEntity listing : expiredListings) {
                 redisTemplate.delete("listing_view_count_" + listing.getId());
+                redisTemplate.delete("listing_count_" + listing.getOwner().getId());
             }
             listingRepository.deleteAll(expiredListings);
         }
