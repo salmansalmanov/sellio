@@ -10,6 +10,8 @@ import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.CustomerEntity;
 import com.sellio.model.entity.ListingEntity;
+import com.sellio.model.entity.UserEntity;
+import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
 import com.sellio.repository.CustomerRepository;
@@ -17,12 +19,14 @@ import com.sellio.repository.RefreshTokenRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.CustomerService;
 import com.sellio.service.concrete.MailService;
+import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -40,6 +44,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final SecurityUtil securityUtil;
 
     @Override
     @Transactional
@@ -81,26 +86,46 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request) {
-        CustomerEntity customerEntity = customerRepository.findById(id)
+        String identifier = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        CustomerEntity targetEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
-        customerEntity = customerMapper.updateRequestToEntity(request, customerEntity);
-        customerRepository.save(customerEntity);
-        mailService.sendUpdateMail(customerEntity.getEmail());
-        return new SuccessDataResult<>(customerMapper.toDetailsResponse(customerEntity), "Customer updated successfully");
+
+        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
+                currentUserEntity.getRole() == Role.SUPER_ADMIN ||
+                currentUserEntity.getRole() == Role.ADMIN) {
+            targetEntity = customerMapper.updateRequestToEntity(request, targetEntity);
+            customerRepository.save(targetEntity);
+            mailService.sendUpdateMail(targetEntity.getEmail());
+            return new SuccessDataResult<>(customerMapper.toDetailsResponse(targetEntity), "Customer updated successfully");
+        }
+        throw new AccessDeniedException("Access denied");
     }
 
     @Override
     @Transactional
     public Result deleteCustomerById(UUID id) {
-        CustomerEntity customerEntity = customerRepository.findById(id)
+        String identifier = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        CustomerEntity targetEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
-        refreshTokenRepository.deleteByUser(customerEntity);
-        for (ListingEntity listing : customerEntity.getListings()) {
-            redisTemplate.delete("listing_view_count_" + listing.getId());
-            redisTemplate.delete("listing_count_" + listing.getId());
+
+        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
+                currentUserEntity.getRole() == Role.SUPER_ADMIN ||
+                currentUserEntity.getRole() == Role.ADMIN) {
+            refreshTokenRepository.deleteByUser(targetEntity);
+            for (ListingEntity listing : targetEntity.getListings()) {
+                redisTemplate.delete("listing_view_count_" + listing.getId());
+                redisTemplate.delete("listing_count_" + listing.getId());
+            }
+            customerRepository.delete(targetEntity);
+            mailService.sendDeleteMail(targetEntity.getEmail());
+            return new SuccessResult("Customer deleted successfully");
         }
-        customerRepository.delete(customerEntity);
-        mailService.sendDeleteMail(customerEntity.getEmail());
-        return new SuccessResult("Customer deleted successfully");
+        throw new AccessDeniedException("Access denied");
     }
 }

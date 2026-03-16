@@ -25,4 +25,6 @@ public interface ListingService {
     DataResult<ListingDetailsResponse> deactivate(UUID id);
 
     DataResult<ListingDetailsResponse> activate(UUID id);
+
+    Result delete(UUID id);
 }
