@@ -7,5 +7,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface ImageRepository extends JpaRepository<ImageEntity, UUID> {
-    void deleteAllByListingId(UUID listingId);
+    boolean existsByPublicId(String publicId);
 }
