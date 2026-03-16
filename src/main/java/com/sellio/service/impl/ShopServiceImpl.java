@@ -1,6 +1,5 @@
 package com.sellio.service.impl;
 
-import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.event.ImageUploadEvent;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.ShopMapper;
@@ -26,7 +25,6 @@ import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
 import com.sellio.util.RedisUtil;
 import com.sellio.util.SecurityUtil;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -40,7 +38,6 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 
@@ -63,7 +60,6 @@ public class ShopServiceImpl implements ShopService {
 
     @Override
     @Transactional
-    @CleanupCloudinary
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) throws IOException {
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
         ShopEntity shopEntity = shopMapper.registerRequestToEntity(shopRegisterRequest);

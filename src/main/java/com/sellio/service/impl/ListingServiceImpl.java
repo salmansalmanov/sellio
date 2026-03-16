@@ -1,6 +1,5 @@
 package com.sellio.service.impl;
 
-import com.sellio.aop.annotation.CleanupCloudinary;
 import com.sellio.event.ImageUploadEvent;
 import com.sellio.exception.custom.ListingLimitException;
 import com.sellio.exception.custom.ResourceNotFoundException;
@@ -57,7 +56,6 @@ public class ListingServiceImpl implements ListingService {
 
     @Override
     @Transactional
-    @CleanupCloudinary
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
         String email = securityUtil.getCurrentUsernameOrEmail();
         UserEntity owner = userRepository.findByIdentifier(email)
