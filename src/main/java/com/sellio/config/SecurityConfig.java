@@ -61,6 +61,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/v1/listings/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PATCH, "/v1/listings/deactivate/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
                                 .requestMatchers(HttpMethod.PATCH, "/v1/listings/activate/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
+                                .requestMatchers(HttpMethod.DELETE, "/v1/listings/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/v1/properties").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.PUT, "/v1/properties/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/properties/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
