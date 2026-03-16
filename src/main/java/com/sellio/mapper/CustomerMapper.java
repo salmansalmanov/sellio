@@ -41,6 +41,7 @@ public class CustomerMapper {
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
                 .phoneNumber(phoneNumber)
+                .email(entity.getEmail())
                 .status(entity.getStatus())
                 .role(entity.getRole())
                 .build();

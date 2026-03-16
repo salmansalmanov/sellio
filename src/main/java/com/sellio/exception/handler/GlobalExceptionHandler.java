@@ -6,6 +6,7 @@ import com.sellio.model.result.ErrorResult;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -57,6 +58,18 @@ public class GlobalExceptionHandler {
     @ApiResponse(responseCode = "400", description = "Invalid token")
     public ResponseEntity<ErrorResult> handleInvalidTokenException(InvalidTokenException ex) {
         return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(AccessDeniedException.class)
+    @ApiResponse(responseCode = "403", description = "Access Denied")
+    public ResponseEntity<ErrorResult> handleAccessDeniedException(AccessDeniedException ex) {
+        return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(ListingLimitException.class)
+    @ApiResponse(responseCode = "402", description = "Payment Required")
+    public ResponseEntity<ErrorResult> handleListingLimitException(ListingLimitException ex) {
+        return new ResponseEntity<>(new ErrorResult(ex.getMessage()), HttpStatus.PAYMENT_REQUIRED);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
