@@ -12,6 +12,7 @@ import com.sellio.model.entity.*;
 import com.sellio.model.enums.DomainType;
 import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.ListingStatus;
+import com.sellio.model.enums.Role;
 import com.sellio.model.result.*;
 import com.sellio.repository.*;
 import com.sellio.service.abstraction.ListingService;
@@ -19,6 +20,7 @@ import com.sellio.service.concrete.CloudinaryService;
 import com.sellio.service.concrete.MailService;
 import com.sellio.util.FileUtil;
 import com.sellio.util.RedisUtil;
+import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -31,6 +33,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+
+import org.springframework.security.access.AccessDeniedException;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -52,6 +57,7 @@ public class ListingServiceImpl implements ListingService {
     private final CloudinaryService cloudinaryService;
     private final RedisUtil redisUtil;
     private final RedisTemplate<String, String> redisTemplate;
+    private final SecurityUtil securityUtil;
 
     @Override
     @Transactional
@@ -114,40 +120,57 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> update(UUID id, ListingUpdateRequest request, List<MultipartFile> images) throws IOException {
-        ListingEntity entity = listingRepository.findById(id)
+        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        entity = listingMapper.updateRequestToEntity(request, entity);
+        checkPermission(listingEntity, userEntity);
+
+        listingEntity = listingMapper.updateRequestToEntity(request, listingEntity);
         if (images != null && !images.isEmpty()) {
-            entity.getImages().clear();
-            cloudinaryService.forceRemoveFolder("listings/" + entity.getId());
-            initializeImages(images, entity);
+            listingEntity.getImages().clear();
+            cloudinaryService.forceRemoveFolder("listings/" + listingEntity.getId());
+            initializeImages(images, listingEntity);
         }
-        entity.setExpireDate(LocalDateTime.now().plusMonths(1));
-        listingRepository.save(entity);
-        mailService.sendListingUpdatedMail(entity.getOwner().getEmail());
-        return new SuccessDataResult<>(listingMapper.toDetailsResponse(entity), "Listing updated successfully");
+        listingEntity.setExpireDate(LocalDateTime.now().plusMonths(1));
+        listingRepository.save(listingEntity);
+        mailService.sendListingUpdatedMail(listingEntity.getOwner().getEmail());
+        return new SuccessDataResult<>(listingMapper.toDetailsResponse(listingEntity), "Listing updated successfully");
     }
 
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> deactivate(UUID id) {
-        ListingEntity entity = listingRepository.findById(id)
+        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
+        ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        entity.setStatus(ListingStatus.INACTIVE);
-        entity.setDeletedAt(LocalDateTime.now());
-        entity.setExpireDate(LocalDateTime.now().plusMonths(1));
-        ListingEntity savedEntity = listingRepository.save(entity);
+        checkPermission(listingEntity, userEntity);
+
+        listingEntity.setStatus(ListingStatus.INACTIVE);
+        listingEntity.setExpireDate(LocalDateTime.now().plusMonths(1));
+        ListingEntity savedEntity = listingRepository.save(listingEntity);
         ListingDetailsResponse response = listingMapper.toDetailsResponse(savedEntity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
-        mailService.sendListingExpiredMail(entity.getOwner().getEmail());
+        mailService.sendListingExpiredMail(listingEntity.getOwner().getEmail());
         return new SuccessDataResult<>(response, "Listing deactivated successfully");
     }
 
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> activate(UUID id) {
+        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
+        checkPermission(entity, userEntity);
+
         entity.setStatus(ListingStatus.ACTIVE);
         entity.setExpireDate(LocalDateTime.now().plusMonths(1));
         listingRepository.save(entity);
@@ -180,9 +203,10 @@ public class ListingServiceImpl implements ListingService {
         }
     }
 
-    private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) {
-        UserEntity owner = userRepository.findById(request.getOwnerId())
-                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + request.getOwnerId()));
+    private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) throws AccessDeniedException {
+        String email = securityUtil.getCurrentUsernameOrEmail();
+        UserEntity owner = userRepository.findByIdentifier(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
         listingEntity.setOwner(owner);
 
         CityEntity cityEntity = cityRepository.findById(request.getCityId())
@@ -213,6 +237,15 @@ public class ListingServiceImpl implements ListingService {
                         .build();
                 listingEntity.getListingProperties().add(listingPropertyEntity);
             }
+        }
+    }
+
+    private void checkPermission(ListingEntity listingEntity, UserEntity userEntity) {
+        boolean isOwner = userEntity.getId().equals(listingEntity.getOwner().getId());
+        boolean isAdmin = userEntity.getRole() == Role.ADMIN || userEntity.getRole() == Role.SUPER_ADMIN;
+
+        if (!isOwner && !isAdmin) {
+            throw new AccessDeniedException("You are not allowed to access this resource");
         }
     }
 }

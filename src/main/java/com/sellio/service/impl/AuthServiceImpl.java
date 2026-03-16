@@ -76,7 +76,9 @@ public class AuthServiceImpl implements AuthService {
 
         UserEntity userEntity = userRepository.findByIdentifier(loginRequest.getUsernameOrEmail())
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-        String principal = userEntity.getEmail() != null ? userEntity.getEmail() : ((AdminEntity) Hibernate.unproxy(userEntity)).getUsername();
+        String principal = userEntity.getRole() == Role.ADMIN || userEntity.getRole() == Role.SUPER_ADMIN ?
+                ((AdminEntity) Hibernate.unproxy(userEntity)).getUsername() : userEntity.getEmail();
+
         String accessToken = jwtUtil.generateAccessToken(principal, userEntity.getRole());
         UUID refreshToken = UUID.randomUUID();
 
