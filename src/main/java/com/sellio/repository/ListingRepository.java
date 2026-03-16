@@ -5,6 +5,7 @@ import com.sellio.model.enums.ListingStatus;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
@@ -33,4 +34,8 @@ public interface ListingRepository extends JpaRepository<ListingEntity, UUID> {
             "subcategory.properties"
     })
     Optional<ListingEntity> findById(UUID id);
+
+    List<ListingEntity> findAllByOwnerIdAndStatus(UUID id, Sort sort, ListingStatus status);
+
+    List<ListingEntity> findAllByOwnerIdAndStatus(UUID id, ListingStatus status);
 }

@@ -18,4 +18,5 @@ public class CustomerDetailsResponse extends UserResponse {
     private String firstName;
     private String lastName;
     private String phoneNumber;
+    private String email;
 }

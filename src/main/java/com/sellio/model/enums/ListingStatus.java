@@ -4,5 +4,6 @@ public enum ListingStatus {
     ACTIVE,
     EXPIRED,
     PENDING,
-    INACTIVE
+    INACTIVE,
+    LIMIT_EXCEEDED
 }

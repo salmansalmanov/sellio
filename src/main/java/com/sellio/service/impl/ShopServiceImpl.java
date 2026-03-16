@@ -17,6 +17,7 @@ import com.sellio.model.enums.DomainType;
 import com.sellio.model.enums.ImageType;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
+import com.sellio.repository.RefreshTokenRepository;
 import com.sellio.repository.ShopRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.AddressService;
@@ -56,6 +57,7 @@ public class ShopServiceImpl implements ShopService {
     private final ApplicationEventPublisher eventPublisher;
     private final RedisUtil redisUtil;
     private final PasswordEncoder passwordEncoder;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     @Transactional
@@ -80,8 +82,11 @@ public class ShopServiceImpl implements ShopService {
         eventPublisher.publishEvent(
                 new ImageUploadEvent(savedEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
         );
-        String key = "shop_view_count_" + savedEntity.getId();
-        redisTemplate.opsForValue().set(key, String.valueOf(0));
+        String viewCount = "shop_view_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(viewCount, String.valueOf(0));
+
+        String listingCount = "listing_count_" + savedEntity.getId();
+        redisTemplate.opsForValue().set(listingCount, "0");
 
         return new SuccessDataResult<>(shopMapper.toDetailsResponse(savedEntity), "Shop saved successfully");
     }
@@ -146,6 +151,7 @@ public class ShopServiceImpl implements ShopService {
     public Result deleteShopById(UUID id) {
         ShopEntity entity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
+        refreshTokenRepository.deleteByUser(entity);
         cloudinaryService.forceRemoveFolder("shops/" + entity.getId());
         shopRepository.deleteById(id);
         redisTemplate.delete(String.valueOf(entity.getId()));
