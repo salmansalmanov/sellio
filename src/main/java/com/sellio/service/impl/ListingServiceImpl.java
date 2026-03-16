@@ -69,7 +69,6 @@ public class ListingServiceImpl implements ListingService {
 
         ListingEntity listingEntity = listingMapper.createRequestToEntity(request);
         listingEntity.setOwner(owner);
-        initializeListingCount(owner);
         initializeEntities(listingEntity, request);
 
         List<PropertyValueEntity> selectedValues = new ArrayList<>();
@@ -84,6 +83,7 @@ public class ListingServiceImpl implements ListingService {
         initializeImages(images, savedEntity);
         String key = "listing_view_count_" + savedEntity.getId();
         redisTemplate.opsForValue().set(key, "0");
+        initializeListingCount(owner);
 
         mailService.sendListingCreatedMail(savedEntity.getOwner().getEmail());
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(savedEntity), "Listing created successfully");

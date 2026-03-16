@@ -70,4 +70,20 @@ public class SchedulerService {
         }
         log.info("ActionLog.cleanUpExpiredListings.end");
     }
+
+    @Transactional
+    @Scheduled(cron = "0 0 0 * * *")
+    public void cleanupLimitExceededListings() {
+        log.info("ActionLog.cleanupLimitExceededListings.start");
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        List<ListingEntity> limitExceededListings = listingRepository
+                .findAllByStatusAndUpdatedAtBefore(ListingStatus.LIMIT_EXCEEDED, oneMonthAgo);
+        if (!limitExceededListings.isEmpty()) {
+            for (ListingEntity listing : limitExceededListings) {
+                redisTemplate.delete("listing_view_count_" + listing.getId());
+            }
+            listingRepository.deleteAll(limitExceededListings);
+        }
+        log.info("ActionLog.cleanupLimitExceededListings.end");
+    }
 }

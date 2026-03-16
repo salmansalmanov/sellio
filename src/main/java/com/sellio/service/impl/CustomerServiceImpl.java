@@ -9,9 +9,11 @@ import com.sellio.model.dto.response.core.CustomerDetailsResponse;
 import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.CustomerEntity;
+import com.sellio.model.entity.ListingEntity;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
 import com.sellio.repository.CustomerRepository;
+import com.sellio.repository.RefreshTokenRepository;
 import com.sellio.repository.UserRepository;
 import com.sellio.service.abstraction.CustomerService;
 import com.sellio.service.concrete.MailService;
@@ -37,6 +39,7 @@ public class CustomerServiceImpl implements CustomerService {
     private final CustomerRepository customerRepository;
     private final PasswordEncoder passwordEncoder;
     private final RedisTemplate<String, String> redisTemplate;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Override
     @Transactional
@@ -47,8 +50,8 @@ public class CustomerServiceImpl implements CustomerService {
         customerEntity.setPassword(passwordEncoder.encode(customerRegisterRequest.getPassword()));
         CustomerEntity savedEntity = userRepository.save(customerEntity);
         String key = "listing_count_" + savedEntity.getId();
-        redisTemplate.opsForValue().set(key, "0");
         mailService.sendRegistrationMail(savedEntity.getEmail());
+        redisTemplate.opsForValue().set(key, "0");
         return new SuccessDataResult<>(customerMapper.toDetailsResponse(savedEntity), "Customer registered successfully");
     }
 
@@ -91,6 +94,11 @@ public class CustomerServiceImpl implements CustomerService {
     public Result deleteCustomerById(UUID id) {
         CustomerEntity customerEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
+        refreshTokenRepository.deleteByUser(customerEntity);
+        for (ListingEntity listing : customerEntity.getListings()) {
+            redisTemplate.delete("listing_view_count_" + listing.getId());
+            redisTemplate.delete("listing_count_" + listing.getId());
+        }
         customerRepository.delete(customerEntity);
         mailService.sendDeleteMail(customerEntity.getEmail());
         return new SuccessResult("Customer deleted successfully");

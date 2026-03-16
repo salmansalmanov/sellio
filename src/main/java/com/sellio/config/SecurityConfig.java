@@ -77,6 +77,7 @@ public class SecurityConfig {
                                 .requestMatchers(HttpMethod.PUT, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.DELETE, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN")
                                 .requestMatchers(HttpMethod.GET, "/v1/subcategories/**").hasAnyRole("SUPER_ADMIN", "ADMIN", "CUSTOMER", "SHOP")
+                                .requestMatchers("/v1/pricing/change-plan/**").hasAnyRole("CUSTOMER", "SHOP")
                                 .anyRequest().authenticated())
                 .sessionManagement(sessionManagement ->
                         sessionManagement.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
