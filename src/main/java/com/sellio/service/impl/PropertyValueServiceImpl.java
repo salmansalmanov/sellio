@@ -14,6 +14,7 @@ import com.sellio.repository.PropertyRepository;
 import com.sellio.repository.PropertyValueRepository;
 import com.sellio.service.abstraction.PropertyValueService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PropertyValueServiceImpl implements PropertyValueService {
@@ -35,6 +37,7 @@ public class PropertyValueServiceImpl implements PropertyValueService {
     @Override
     @Transactional
     public DataResult<PropertyValueSaveResponse> save(PropertyValueAddRequest request) {
+        log.info("PropertyValueServiceImpl.save.start: {}", request);
         PropertyEntity propertyEntity = propertyRepository.findById(request.getPropertyId())
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + request.getPropertyId()));
 
@@ -48,18 +51,22 @@ public class PropertyValueServiceImpl implements PropertyValueService {
         }
 
         List<PropertyValueEntity> savedEntities = propertyValueRepository.saveAll(propertyValueEntities);
+        log.info("PropertyValueServiceImpl.save.end: {}", savedEntities);
         return new SuccessDataResult<>(propertyValueMapper.toSaveResponse(savedEntities), "Property value saved successfully");
     }
 
     @Override
     public DataResult<PropertyValueGetResponse> getById(UUID id) {
+        log.info("PropertyValueServiceImpl.getById.start: {}", id);
         PropertyValueEntity entity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
+        log.info("PropertyValueServiceImpl.getById.end: {}", entity);
         return new SuccessDataResult<>(propertyValueMapper.toGetResponse(entity), "Property value found successfully");
     }
 
     @Override
     public DataResult<PageData<PropertyValueResponse>> getAll(UUID propertyId, int page, int size) {
+        log.info("PropertyValueServiceImpl.getAll.start: {}", propertyId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt"));
         String message;
         Page<PropertyValueEntity> propertyValuePage;
@@ -83,12 +90,14 @@ public class PropertyValueServiceImpl implements PropertyValueService {
                 propertyValuePage.getNumber(),
                 propertyValueMapper.toResponses(propertyValuePage.getContent())
         );
+        log.info("PropertyValueServiceImpl.getAll.end: {}", propertyValueResponsePageData);
         return new SuccessDataResult<>(propertyValueResponsePageData, message);
     }
 
     @Override
     @Transactional
     public DataResult<PropertyValueGetResponse> update(UUID id, PropertyValueUpdateRequest request) {
+        log.info("PropertyValueServiceImpl.update.start: {}", id);
         PropertyValueEntity propertyValueEntity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property value not found with id: " + id));
         if (request.getPropertyId() != null) {
@@ -97,14 +106,17 @@ public class PropertyValueServiceImpl implements PropertyValueService {
             propertyValueEntity.setProperty(propertyEntity);
         }
         propertyValueEntity = propertyValueMapper.updateRequestToEntity(request, propertyValueEntity);
+        log.info("PropertyValueServiceImpl.update.end: {}", propertyValueEntity);
         return new SuccessDataResult<>(propertyValueMapper.toGetResponse(propertyValueEntity), "Property value updated successfully");
     }
 
     @Override
     public Result delete(UUID id) {
+        log.info("PropertyValueServiceImpl.delete.start: {}", id);
         PropertyValueEntity entity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + id));
         propertyValueRepository.delete(entity);
+        log.info("PropertyValueServiceImpl.delete.end: {}", entity);
         return new SuccessResult("Property value deleted successfully");
     }
 }

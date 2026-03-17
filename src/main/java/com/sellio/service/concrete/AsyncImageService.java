@@ -37,6 +37,7 @@ public class AsyncImageService {
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
     public void uploadImagesAsync(ImageUploadEvent event) {
+        log.info("ActionLog.uploadImagesAsync.start");
         try {
             ImageEntity imageEntity = upload(event.getReferenceId(), event.getFileBytes(), event.getImageType(), event.getDomainType());
             ImageEntity savedImage = imageRepository.save(imageEntity);
@@ -47,9 +48,11 @@ public class AsyncImageService {
         } catch (Exception e) {
             log.error("Error uploading image for domain {}: {}", event.getDomainType(), e.getMessage());
         }
+        log.info("ActionLog.uploadImagesAsync.end");
     }
 
     private void updateDomainEntity(ImageUploadEvent event, ImageEntity image) {
+        log.info("ActionLog.updateDomainEntity.start");
         switch (event.getDomainType()) {
             case SHOP -> {
                 if (event.getImageType() == ImageType.LOGO) {
@@ -69,9 +72,11 @@ public class AsyncImageService {
                 imageRepository.save(image);
             }
         }
+        log.info("ActionLog.updateDomainEntity.end");
     }
 
     private ImageEntity upload(UUID referenceId, byte[] bytes, ImageType imageType, DomainType domainType) {
+        log.info("ActionLog.uploadImage.start");
         String folder = domainType.name().toLowerCase() + "s/" + referenceId;
 
         String fileName = (imageType == ImageType.LISTING || imageType == ImageType.LISTING_THUMBNAIL) ? String.format("listing_%s", UUID.randomUUID())
@@ -79,6 +84,7 @@ public class AsyncImageService {
 
         Map<String, Object> cloudinaryResponse = cloudinaryService.upload(bytes, folder, fileName);
         ImageResponse imageResponse = imageMapper.toResponse(cloudinaryResponse);
+        log.info("ActionLog.uploadImage.end");
         return imageMapper.toEntity(imageResponse, imageType);
     }
 }

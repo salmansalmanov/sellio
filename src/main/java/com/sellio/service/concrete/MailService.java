@@ -3,6 +3,7 @@ package com.sellio.service.concrete;
 import com.sellio.exception.custom.MailException;
 import jakarta.mail.internet.MimeMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -14,6 +15,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class MailService {
@@ -63,6 +65,7 @@ public class MailService {
     }
 
     private void sendMail(String path, String subject, String to) {
+        log.info("ActionLog.sendMail.start: {}", path);
         try {
             ClassPathResource resource = new ClassPathResource(path);
             String htmlContent = Files.readString(Path.of(resource.getFile().getPath()), StandardCharsets.UTF_8);
@@ -77,7 +80,9 @@ public class MailService {
 
             mailSender.send(mimeMessage);
         } catch (Exception e) {
+            log.error("ActionLog.sendMail.exception: {}", e.getMessage());
             throw new MailException("Mail exception: " + e.getMessage());
         }
+        log.info("ActionLog.sendMail.end: {}", path);
     }
 }
