@@ -9,7 +9,6 @@ import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.service.abstraction.AuthService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +27,10 @@ import java.io.IOException;
 public class AuthController {
     private final AuthService authService;
 
+    @Operation(summary = "Register API")
     @PostMapping(
             value = "/register",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @Operation(
-            summary = "Register API",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "201")
-            }
     )
     public ResponseEntity<DataResult<UserResponse>> register(
             @Valid RegisterRequest request,
@@ -48,23 +42,13 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    @Operation(
-            summary = "Login API",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Login API")
     public ResponseEntity<DataResult<LoginResponse>> login(@RequestBody @Valid LoginRequest request) {
         return new ResponseEntity<>(authService.login(request), HttpStatus.OK);
     }
 
     @PostMapping("/refresh-token")
-    @Operation(
-            summary = "Refresh access and refresh token",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Refresh access and refresh token")
     public ResponseEntity<DataResult<TokenRefreshResponse>> refreshToken(@RequestBody @Valid TokenRefreshRequest request) {
         return new ResponseEntity<>(authService.refreshToken(request), HttpStatus.OK);
     }

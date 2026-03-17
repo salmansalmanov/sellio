@@ -2,7 +2,6 @@ package com.sellio.exception.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sellio.model.result.ErrorResult;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.jspecify.annotations.NonNull;

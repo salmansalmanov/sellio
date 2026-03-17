@@ -5,7 +5,6 @@ import com.sellio.model.entity.AdminEntity;
 import com.sellio.model.entity.UserEntity;
 import com.sellio.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
-import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.NullMarked;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;

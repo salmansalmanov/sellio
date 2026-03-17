@@ -9,7 +9,6 @@ import com.sellio.model.result.PageData;
 import com.sellio.model.result.Result;
 import com.sellio.service.abstraction.PropertyService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,34 +26,19 @@ public class PropertyController {
     private final PropertyService propertyService;
 
     @PostMapping
-    @Operation(
-            summary = "Create property",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "201")
-            }
-    )
+    @Operation(summary = "Create property")
     public ResponseEntity<DataResult<PropertyDetailsResponse>> createProperty(@RequestBody @Valid PropertyCreateRequest request) {
         return new ResponseEntity<>(propertyService.save(request), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Get property by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get property by ID")
     public ResponseEntity<DataResult<PropertyDetailsResponse>> getProperty(@PathVariable UUID id) {
         return new ResponseEntity<>(propertyService.getById(id), HttpStatus.OK);
     }
 
     @GetMapping
-    @Operation(
-            summary = "Get all properties",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get all properties")
     public ResponseEntity<DataResult<PageData<PropertyResponse>>> getAllProperties(
             @RequestParam(required = false) UUID subcategoryId,
             @RequestParam(defaultValue = "0") int page,
@@ -64,23 +48,13 @@ public class PropertyController {
     }
 
     @PutMapping("/{id}")
-    @Operation(
-            summary = "Update property by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Update property by ID")
     public ResponseEntity<DataResult<PropertyDetailsResponse>> updateProperty(@PathVariable UUID id, @RequestBody @Valid PropertyUpdateRequest request) {
         return new ResponseEntity<>(propertyService.update(id, request), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete property by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Delete property by ID")
     public ResponseEntity<Result> deleteProperty(@PathVariable UUID id) {
         return new ResponseEntity<>(propertyService.delete(id), HttpStatus.OK);
     }

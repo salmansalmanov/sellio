@@ -86,46 +86,30 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     @Transactional
     public DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request) {
-        String identifier = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         CustomerEntity targetEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
 
-        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
-                currentUserEntity.getRole() == Role.SUPER_ADMIN ||
-                currentUserEntity.getRole() == Role.ADMIN) {
-            targetEntity = customerMapper.updateRequestToEntity(request, targetEntity);
-            customerRepository.save(targetEntity);
-            mailService.sendUpdateMail(targetEntity.getEmail());
-            return new SuccessDataResult<>(customerMapper.toDetailsResponse(targetEntity), "Customer updated successfully");
-        }
-        throw new AccessDeniedException("Access denied");
+        securityUtil.validateAccess(targetEntity);
+        targetEntity = customerMapper.updateRequestToEntity(request, targetEntity);
+        customerRepository.save(targetEntity);
+        mailService.sendUpdateMail(targetEntity.getEmail());
+        return new SuccessDataResult<>(customerMapper.toDetailsResponse(targetEntity), "Customer updated successfully");
     }
 
     @Override
     @Transactional
     public Result deleteCustomerById(UUID id) {
-        String identifier = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         CustomerEntity targetEntity = customerRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found with id: " + id));
 
-        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
-                currentUserEntity.getRole() == Role.SUPER_ADMIN ||
-                currentUserEntity.getRole() == Role.ADMIN) {
-            refreshTokenRepository.deleteByUser(targetEntity);
-            for (ListingEntity listing : targetEntity.getListings()) {
-                redisTemplate.delete("listing_view_count_" + listing.getId());
-                redisTemplate.delete("listing_count_" + listing.getId());
-            }
-            customerRepository.delete(targetEntity);
-            mailService.sendDeleteMail(targetEntity.getEmail());
-            return new SuccessResult("Customer deleted successfully");
+        securityUtil.validateAccess(targetEntity);
+        refreshTokenRepository.deleteByUser(targetEntity);
+        for (ListingEntity listing : targetEntity.getListings()) {
+            redisTemplate.delete("listing_view_count_" + listing.getId());
+            redisTemplate.delete("listing_count_" + listing.getId());
         }
-        throw new AccessDeniedException("Access denied");
+        customerRepository.delete(targetEntity);
+        mailService.sendDeleteMail(targetEntity.getEmail());
+        return new SuccessResult("Customer deleted successfully");
     }
 }

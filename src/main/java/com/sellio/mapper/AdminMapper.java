@@ -30,6 +30,7 @@ public class AdminMapper {
                 .firstName(entity.getFirstName())
                 .lastName(entity.getLastName())
                 .username(entity.getUsername())
+                .email(entity.getEmail())
                 .status(entity.getStatus())
                 .role(entity.getRole())
                 .build();

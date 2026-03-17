@@ -3,7 +3,7 @@ package com.sellio.service.impl;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.PropertyDependencyMapper;
 import com.sellio.mapper.PropertyValueMapper;
-import com.sellio.model.dto.request.PropertyDependencyRequest;
+import com.sellio.model.dto.request.PropertyDependencyCreateRequest;
 import com.sellio.model.dto.response.core.PropertyDependencyDetailsResponse;
 import com.sellio.model.dto.response.core.PropertyDependencyResponse;
 import com.sellio.model.entity.PropertyDependencyEntity;
@@ -13,7 +13,6 @@ import com.sellio.repository.PropertyDependencyRepository;
 import com.sellio.repository.PropertyValueRepository;
 import com.sellio.service.abstraction.PropertyDependencyService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.internal.util.collections.AbstractPagedArray;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +34,7 @@ public class PropertyDependencyServiceImpl implements PropertyDependencyService 
 
     @Override
     @Transactional
-    public DataResult<PropertyDependencyDetailsResponse> save(PropertyDependencyRequest request) {
+    public DataResult<PropertyDependencyDetailsResponse> save(PropertyDependencyCreateRequest request) {
         PropertyValueEntity parentPropertyValueEntity = propertyValueRepository.findById(request.getParentPropertyValueId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parent property value not found with id: " + request.getParentPropertyValueId()));
 

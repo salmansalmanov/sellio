@@ -4,10 +4,12 @@ import com.sellio.model.dto.request.AdminInviteRequest;
 import com.sellio.model.dto.request.AdminUpdateRequest;
 import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
-import com.sellio.model.result.*;
+import com.sellio.model.result.DataResult;
+import com.sellio.model.result.PageData;
+import com.sellio.model.result.Result;
+import com.sellio.model.result.SuccessResult;
 import com.sellio.service.abstraction.AdminService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -25,24 +27,14 @@ public class AdminController {
     private final AdminService adminService;
 
     @PostMapping("/invite")
-    @Operation(
-            description = "Admin Invite API",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
-    public ResponseEntity<Result> inviteAdmin(@RequestBody AdminInviteRequest request) {
+    @Operation(summary = "Admin Invite API")
+    public ResponseEntity<Result> inviteAdmin(@RequestBody @Valid AdminInviteRequest request) {
         adminService.invite(request);
         return ResponseEntity.ok(new SuccessResult("Admin invited successfully"));
     }
 
     @GetMapping
-    @Operation(
-            description = "Get all admins",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get all admins")
     public ResponseEntity<DataResult<PageData<AdminResponse>>> getAllAdmins(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -51,23 +43,13 @@ public class AdminController {
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            description = "Get admin by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get admin by ID")
     public ResponseEntity<DataResult<AdminDetailsResponse>> getAdminById(@PathVariable UUID id) {
         return new ResponseEntity<>(adminService.getAdminById(id), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    @Operation(
-            description = "Update admin by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Update admin by ID")
     public ResponseEntity<DataResult<AdminDetailsResponse>> updateAdminById(
             @PathVariable UUID id,
             @RequestBody @Valid AdminUpdateRequest request
@@ -76,12 +58,7 @@ public class AdminController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(
-            description = "Delete admin by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Delete admin by ID")
     public ResponseEntity<Result> deleteAdminById(@PathVariable UUID id) {
         return new ResponseEntity<>(adminService.deleteAdminById(id), HttpStatus.OK);
     }

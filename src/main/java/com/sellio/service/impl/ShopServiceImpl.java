@@ -9,10 +9,12 @@ import com.sellio.model.dto.request.ShopUpdateRequest;
 import com.sellio.model.dto.response.core.ShopDetailsResponse;
 import com.sellio.model.dto.response.core.ShopResponse;
 import com.sellio.model.dto.response.core.UserResponse;
-import com.sellio.model.entity.*;
+import com.sellio.model.entity.AddressEntity;
+import com.sellio.model.entity.ListingEntity;
+import com.sellio.model.entity.ShopAddressEntity;
+import com.sellio.model.entity.ShopEntity;
 import com.sellio.model.enums.DomainType;
 import com.sellio.model.enums.ImageType;
-import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
 import com.sellio.repository.RefreshTokenRepository;
@@ -31,7 +33,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -123,61 +124,45 @@ public class ShopServiceImpl implements ShopService {
     @Override
     @Transactional
     public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) throws IOException {
-        String identifier = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         ShopEntity targetEntity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
-        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
-                currentUserEntity.getRole() == Role.ADMIN ||
-                currentUserEntity.getRole() == Role.SUPER_ADMIN) {
-            targetEntity = shopMapper.updateRequestToEntity(request, targetEntity);
-            initializeAddresses(targetEntity, request.getPlaceIds());
+        securityUtil.validateAccess(targetEntity);
+        targetEntity = shopMapper.updateRequestToEntity(request, targetEntity);
+        initializeAddresses(targetEntity, request.getPlaceIds());
 
-            fileUtil.validateImage(logo);
-            eventPublisher.publishEvent(
-                    new ImageUploadEvent(targetEntity.getId(), logo.getBytes(), ImageType.LOGO, DomainType.SHOP)
-            );
+        fileUtil.validateImage(logo);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(targetEntity.getId(), logo.getBytes(), ImageType.LOGO, DomainType.SHOP)
+        );
 
-            fileUtil.validateImage(banner);
-            eventPublisher.publishEvent(
-                    new ImageUploadEvent(targetEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
-            );
+        fileUtil.validateImage(banner);
+        eventPublisher.publishEvent(
+                new ImageUploadEvent(targetEntity.getId(), banner.getBytes(), ImageType.BANNER, DomainType.SHOP)
+        );
 
-            shopRepository.save(targetEntity);
-            mailService.sendUpdateMail(targetEntity.getEmail());
-            return new SuccessDataResult<>(shopMapper.toDetailsResponse(targetEntity), "Shop updated successfully");
-        }
-        throw new AccessDeniedException("Access denied");
+        shopRepository.save(targetEntity);
+        mailService.sendUpdateMail(targetEntity.getEmail());
+        return new SuccessDataResult<>(shopMapper.toDetailsResponse(targetEntity), "Shop updated successfully");
     }
 
     @Override
     @Transactional
     public Result deleteShopById(UUID id) {
-        String identifier = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUserEntity = userRepository.findByIdentifier(identifier)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         ShopEntity targetEntity = shopRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Shop not found with id: " + id));
 
-        if (currentUserEntity.getId().equals(targetEntity.getId()) ||
-                currentUserEntity.getRole() == Role.ADMIN ||
-                currentUserEntity.getRole() == Role.SUPER_ADMIN) {
-            refreshTokenRepository.deleteByUser(targetEntity);
-            cloudinaryService.forceRemoveFolder("shops/" + targetEntity.getId());
-            for (ListingEntity listingEntity : targetEntity.getListings()) {
-                redisTemplate.delete("listing_view_count_" + listingEntity.getId());
-                redisTemplate.delete("listing_count_" + listingEntity.getId());
-            }
-            shopRepository.deleteById(id);
-            redisTemplate.delete(String.valueOf(targetEntity.getId()));
-            mailService.sendDeleteMail(targetEntity.getEmail());
-            return new SuccessResult("Shop deleted successfully");
+        securityUtil.validateAccess(targetEntity);
+        refreshTokenRepository.deleteByUser(targetEntity);
+        cloudinaryService.forceRemoveFolder("shops/" + targetEntity.getId());
+        for (ListingEntity listingEntity : targetEntity.getListings()) {
+            redisTemplate.delete("listing_view_count_" + listingEntity.getId());
+            redisTemplate.delete("listing_count_" + listingEntity.getId());
         }
-        throw new AccessDeniedException("Access denied");
+        shopRepository.deleteById(id);
+        redisTemplate.delete(String.valueOf(targetEntity.getId()));
+        mailService.sendDeleteMail(targetEntity.getEmail());
+        return new SuccessResult("Shop deleted successfully");
     }
 
     private void initializeAddresses(ShopEntity shopEntity, Set<String> placeIds) {
