@@ -5,11 +5,10 @@ import com.cloudinary.utils.ObjectUtils;
 import com.sellio.exception.custom.CloudinaryException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.action.internal.ActionLogging;
 import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -21,6 +20,7 @@ public class CloudinaryService {
 
     @SuppressWarnings("unchecked")
     public Map<String, Object> upload(byte[] fileBytes, String folder, String fileName) {
+        log.info("ActionLog.upload.start: {}, {}", folder, fileName);
         if (fileBytes == null) return null;
         try {
             return (Map<String, Object>) cloudinary.uploader().upload(fileBytes,
@@ -30,22 +30,27 @@ public class CloudinaryService {
                             "overwrite", true
                     ));
         } catch (Exception e) {
+            log.error("ActionLog.upload.error: {}", e.getMessage());
             throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
         }
     }
 
     public void forceRemoveFolder(String folder) {
+        log.info("ActionLog.forceRemoveFolder.start: {}", folder);
         try {
             cloudinary.api().deleteResourcesByPrefix(folder + "/",
                     ObjectUtils.asMap("resource_type", "image"));
             cloudinary.api().deleteFolder(folder, ObjectUtils.emptyMap());
         } catch (Exception e) {
+            log.error("ActionLog.forceRemoveFolder.error: {}", e.getMessage());
             throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
         }
+        log.info("ActionLog.forceRemoveFolder.end: {}", folder);
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getAllPublicIdsInFolder(String folder) {
+        log.info("ActionLog.getAllPublicIdsInFolder.start: {}", folder);
         List<String> publicIds = new ArrayList<>();
         try {
             var result = cloudinary.api().resources(ObjectUtils.asMap(
@@ -58,12 +63,15 @@ public class CloudinaryService {
                 publicIds.add((String) resource.get("public_id"));
             }
         } catch (Exception e) {
+            log.error("ActionLog.getAllPublicIdsInFolder.error: {}", e.getMessage());
             throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
         }
+        log.info("ActionLog.getAllPublicIdsInFolder.end: {}", folder);
         return publicIds;
     }
 
     public void deleteImage(String publicId) {
+        log.info("ActionLog.deleteImage.start: {}", publicId);
         try {
             var result = cloudinary.uploader().destroy(publicId, ObjectUtils.emptyMap());
             if ("ok".equals(result.get("result"))) {
@@ -72,12 +80,15 @@ public class CloudinaryService {
                 log.warn("Image delete failed");
             }
         } catch (Exception e) {
+            log.error("ActionLog.deleteImage.error: {}", e.getMessage());
             throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
         }
+        log.info("ActionLog.deleteImage.end: {}", publicId);
     }
 
     @SuppressWarnings("unchecked")
     public List<String> getSubfolderNames(String rootFolder) {
+        log.info("ActionLog.getSubfolderNames.start: {}", rootFolder);
         List<String> subfolderNames = new ArrayList<>();
         try {
             var result = cloudinary.api().subFolders(rootFolder, ObjectUtils.asMap(
@@ -92,16 +103,20 @@ public class CloudinaryService {
             }
             log.info("{} Subfolders found from {}", subfolderNames.size(), rootFolder);
         } catch (Exception e) {
+            log.error("ActionLog.getSubfolderNames.error: {}", e.getMessage());
             throw new CloudinaryException("Cloudinary exception: " + e.getMessage());
         }
+        log.info("ActionLog.getSubfolderNames.end: {}", rootFolder);
         return subfolderNames;
     }
 
     public void deleteFolderOnlyIfEmpty(String folder) {
+        log.info("ActionLog.deleteFolderOnlyIfEmpty.start: {}", folder);
         try {
             cloudinary.api().deleteFolder(folder, ObjectUtils.emptyMap());
         } catch (Exception e) {
             log.warn("Folder is not empty");
         }
+        log.info("ActionLog.deleteFolderOnlyIfEmpty.end: {}", folder);
     }
 }

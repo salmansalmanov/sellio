@@ -3,7 +3,7 @@ package com.sellio.service.impl;
 import com.sellio.exception.custom.ResourceNotFoundException;
 import com.sellio.mapper.PropertyDependencyMapper;
 import com.sellio.mapper.PropertyValueMapper;
-import com.sellio.model.dto.request.PropertyDependencyRequest;
+import com.sellio.model.dto.request.PropertyDependencyCreateRequest;
 import com.sellio.model.dto.response.core.PropertyDependencyDetailsResponse;
 import com.sellio.model.dto.response.core.PropertyDependencyResponse;
 import com.sellio.model.entity.PropertyDependencyEntity;
@@ -13,7 +13,7 @@ import com.sellio.repository.PropertyDependencyRepository;
 import com.sellio.repository.PropertyValueRepository;
 import com.sellio.service.abstraction.PropertyDependencyService;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.internal.util.collections.AbstractPagedArray;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PropertyDependencyServiceImpl implements PropertyDependencyService {
@@ -35,7 +36,8 @@ public class PropertyDependencyServiceImpl implements PropertyDependencyService 
 
     @Override
     @Transactional
-    public DataResult<PropertyDependencyDetailsResponse> save(PropertyDependencyRequest request) {
+    public DataResult<PropertyDependencyDetailsResponse> save(PropertyDependencyCreateRequest request) {
+        log.info("PropertyDependencyServiceImpl.save.start: {}", request);
         PropertyValueEntity parentPropertyValueEntity = propertyValueRepository.findById(request.getParentPropertyValueId())
                 .orElseThrow(() -> new ResourceNotFoundException("Parent property value not found with id: " + request.getParentPropertyValueId()));
 
@@ -65,18 +67,22 @@ public class PropertyDependencyServiceImpl implements PropertyDependencyService 
                 response.getChildPropertyValues().add(propertyValueMapper.toResponse(childPropertyValue));
             }
         }
+        log.info("PropertyDependencyServiceImpl.save.end: {}", response);
         return new SuccessDataResult<>(response, "Property dependency created successfully");
     }
 
     @Override
     public DataResult<PropertyDependencyResponse> getById(UUID id) {
+        log.info("PropertyDependencyServiceImpl.getById.start: {}", id);
         PropertyDependencyEntity entity = propertyDependencyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PropertyDependency not found with id: " + id));
+        log.info("PropertyDependencyServiceImpl.getById.end: {}", entity);
         return new SuccessDataResult<>(propertyDependencyMapper.toResponse(entity), "Property dependency found successfully");
     }
 
     @Override
     public DataResult<PageData<PropertyDependencyResponse>> getAll(UUID parentPropertyValueId, int page, int size) {
+        log.info("PropertyDependencyServiceImpl.getAll.start: {}", parentPropertyValueId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt"));
         String message;
         Page<PropertyDependencyEntity> propertyDependencyPage;
@@ -100,14 +106,17 @@ public class PropertyDependencyServiceImpl implements PropertyDependencyService 
                 propertyDependencyPage.getNumber(),
                 propertyDependencyMapper.toResponses(propertyDependencyPage.getContent())
         );
+        log.info("PropertyDependencyServiceImpl.getAll.end: {}", propertyDependencyResponsePageData);
         return new SuccessDataResult<>(propertyDependencyResponsePageData, message);
     }
 
     @Override
     public Result deleteById(UUID id) {
+        log.info("PropertyDependencyServiceImpl.deleteById.start: {}", id);
         PropertyDependencyEntity entity = propertyDependencyRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("PropertyDependency not found with id: " + id));
         propertyDependencyRepository.delete(entity);
+        log.info("PropertyDependencyServiceImpl.deleteById.end: {}", entity);
         return new SuccessResult("Property dependency deleted successfully");
     }
 }

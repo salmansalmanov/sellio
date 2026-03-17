@@ -1,5 +1,6 @@
 package com.sellio.model.dto.response.core;
 
+import com.sellio.model.enums.PricingPlan;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,4 +20,5 @@ public class CustomerDetailsResponse extends UserResponse {
     private String lastName;
     private String phoneNumber;
     private String email;
+    private PricingPlan pricingPlan;
 }

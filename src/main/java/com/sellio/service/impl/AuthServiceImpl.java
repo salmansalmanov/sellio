@@ -23,8 +23,8 @@ import com.sellio.service.abstraction.UserService;
 import com.sellio.util.JwtUtil;
 import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
-import org.hibernate.validator.engine.HibernateValidatorEnhancedBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -37,6 +37,7 @@ import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AuthServiceImpl implements AuthService {
@@ -53,6 +54,7 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     public DataResult<UserResponse> register(RegisterRequest registerRequest, String role, MultipartFile logo, MultipartFile banner) throws IOException {
+        log.info("AuthService.register.start: {}", registerRequest);
         userUtil.checkUser(registerRequest);
         Role roleEnum;
         try {
@@ -61,12 +63,14 @@ public class AuthServiceImpl implements AuthService {
             throw new InvalidInputException("Invalid role");
         }
         UserService userService = userServiceFactory.getServiceByRole(roleEnum);
+        log.info("AuthService.register.end: {}", userService);
         return userService.save(registerRequest, logo, banner);
     }
 
     @Override
     @Transactional
     public DataResult<LoginResponse> login(LoginRequest loginRequest) {
+        log.info("AuthService.login.start: {}", loginRequest);
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         loginRequest.getUsernameOrEmail(),
@@ -92,12 +96,14 @@ public class AuthServiceImpl implements AuthService {
                 .orElseGet(() -> refreshTokenMapper.toEntity(userEntity, refreshToken));
         refreshTokenRepository.save(refreshTokenEntity);
         LoginResponse loginResponse = new LoginResponse(accessToken, refreshToken);
+        log.info("AuthService.login.end: {}", loginResponse);
         return new SuccessDataResult<>(loginResponse, "Login successful");
     }
 
     @Override
     @Transactional
     public DataResult<TokenRefreshResponse> refreshToken(TokenRefreshRequest request) {
+        log.info("AuthService.refreshToken.start: {}", request);
         RefreshTokenEntity refreshTokenEntity = refreshTokenRepository.findByRefreshToken(request.getRefreshToken())
                 .orElseThrow(() -> new ResourceNotFoundException("Refresh token not found"));
         jwtUtil.checkRefreshToken(refreshTokenEntity);
@@ -112,6 +118,7 @@ public class AuthServiceImpl implements AuthService {
         refreshTokenRepository.save(refreshTokenEntity);
 
         TokenRefreshResponse refreshTokenResponse = new TokenRefreshResponse(newAccessToken, newRefreshToken);
+        log.info("AuthService.refreshToken.end: {}", refreshTokenResponse);
         return new SuccessDataResult<>(refreshTokenResponse, "Refresh token successful");
     }
 }

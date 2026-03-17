@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -27,18 +28,7 @@ public class SchedulerService {
 
     @Scheduled(cron = "0 0 0 * * *")
     public void cleanupInactiveListings() {
-        log.info("ActionLog.cleanupInactiveListings.start");
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        List<ListingEntity> inactiveListings = listingRepository
-                .findAllByStatusAndUpdatedAtBefore(ListingStatus.INACTIVE, oneMonthAgo);
-        if (!inactiveListings.isEmpty()) {
-            for (ListingEntity listing : inactiveListings) {
-                redisTemplate.delete("listing_view_count_" + listing.getId());
-                redisTemplate.delete("listing_count_" + listing.getOwner().getId());
-            }
-            listingRepository.deleteAll(inactiveListings);
-        }
-        log.info("ActionLog.cleanupInactiveListings.end");
+        processListingCleanup(ListingStatus.INACTIVE, "cleanupInactiveListings");
     }
 
     @Transactional
@@ -49,10 +39,10 @@ public class SchedulerService {
                 .findAllByStatusAndUpdatedAtBefore(ListingStatus.ACTIVE, LocalDateTime.now());
 
         if (!expiredListings.isEmpty()) {
-            for (ListingEntity listing : expiredListings) {
+            expiredListings.forEach(listing -> {
                 listing.setStatus(ListingStatus.EXPIRED);
                 mailService.sendListingExpiredMail(listing.getOwner().getEmail());
-            }
+            });
         }
         listingRepository.saveAll(expiredListings);
         log.info("ActionLog.changeStatusForExpiredListings.end");
@@ -61,18 +51,7 @@ public class SchedulerService {
     @Transactional
     @Scheduled(cron = "0 0 2 * * *")
     public void cleanupExpiredListings() {
-        log.info("ActionLog.cleanUpExpiredListings.start");
-        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
-        List<ListingEntity> expiredListings = listingRepository
-                .findAllByStatusAndUpdatedAtBefore(ListingStatus.EXPIRED, oneMonthAgo);
-        if (!expiredListings.isEmpty()) {
-            for (ListingEntity listing : expiredListings) {
-                redisTemplate.delete("listing_view_count_" + listing.getId());
-                redisTemplate.delete("listing_count_" + listing.getOwner().getId());
-            }
-            listingRepository.deleteAll(expiredListings);
-        }
-        log.info("ActionLog.cleanUpExpiredListings.end");
+        processListingCleanup(ListingStatus.EXPIRED, "cleanupExpiredListings");
     }
 
     @Transactional
@@ -129,5 +108,23 @@ public class SchedulerService {
             } catch (Exception ignored) {
             }
         }
+    }
+
+    private void processListingCleanup(ListingStatus status, String methodName) {
+        log.info("ActionLog.{}.start", methodName);
+        LocalDateTime oneMonthAgo = LocalDateTime.now().minusMonths(1);
+        List<ListingEntity> listings = listingRepository.findAllByStatusAndUpdatedAtBefore(status, oneMonthAgo);
+
+        if (!listings.isEmpty()) {
+            List<String> keys = new ArrayList<>();
+            listings.forEach(listing -> {
+                keys.add("listing_view_count_" + listing.getId());
+                redisTemplate.opsForValue().decrement("listing_count_" + listing.getOwner().getId());
+            });
+
+            redisTemplate.delete(keys);
+            listingRepository.deleteAll(listings);
+        }
+        log.info("ActionLog.{}.end", methodName);
     }
 }

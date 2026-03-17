@@ -38,4 +38,6 @@ public interface ListingRepository extends JpaRepository<ListingEntity, UUID> {
     List<ListingEntity> findAllByOwnerIdAndStatus(UUID id, Sort sort, ListingStatus status);
 
     List<ListingEntity> findAllByOwnerIdAndStatus(UUID id, ListingStatus status);
+
+    long countByOwnerIdAndStatus(UUID id, ListingStatus status);
 }

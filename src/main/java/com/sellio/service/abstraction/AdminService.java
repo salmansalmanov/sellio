@@ -11,7 +11,7 @@ import com.sellio.model.result.Result;
 import java.util.UUID;
 
 public interface AdminService extends UserService {
-    void invite(AdminInviteRequest request);
+    Result invite(AdminInviteRequest request);
 
     DataResult<PageData<AdminResponse>> getAllAdmins(int page, int size);
 

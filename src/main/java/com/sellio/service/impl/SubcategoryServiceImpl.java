@@ -13,6 +13,7 @@ import com.sellio.repository.CategoryRepository;
 import com.sellio.repository.SubcategoryRepository;
 import com.sellio.service.abstraction.SubcategoryService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.UUID;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class SubcategoryServiceImpl implements SubcategoryService {
@@ -32,24 +34,29 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     @Override
     @Transactional
     public DataResult<SubcategoryDetailsResponse> save(SubcategoryCreateRequest request) {
+        log.info("SubcategoryServiceImpl.save.start: {}", request);
         CategoryEntity categoryEntity = categoryRepository.findById(request.getCategoryId())
                 .orElseThrow(() -> new RuntimeException("Category not found with id " + request.getCategoryId()));
         SubcategoryEntity subcategoryEntity = subcategoryMapper.createRequestToEntity(request);
         subcategoryEntity.setCategory(categoryEntity);
         SubcategoryEntity savedEntity = subcategoryRepository.save(subcategoryEntity);
+        log.info("SubcategoryServiceImpl.save.end: {}", savedEntity);
         return new SuccessDataResult<>(subcategoryMapper.toDetailsResponse(savedEntity), "Subcategory created successfully");
     }
 
     @Override
     public DataResult<SubcategoryDetailsResponse> getById(UUID id) {
+        log.info("SubcategoryServiceImpl.getById.start: {}", id);
         SubcategoryEntity entity = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id " + id));
+        log.info("SubcategoryServiceImpl.getById.end: {}", entity);
         return new SuccessDataResult<>(subcategoryMapper.toDetailsResponse(entity), "Subcategory found successfully");
     }
 
     @Override
     @Transactional
     public DataResult<PageData<SubcategoryResponse>> getAll(int page, int size, UUID categoryId) {
+        log.info("SubcategoryServiceImpl.getAll.start: {}", categoryId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("createdAt"));
         String message;
         Page<SubcategoryEntity> subcategoryPage;
@@ -73,12 +80,14 @@ public class SubcategoryServiceImpl implements SubcategoryService {
                 subcategoryPage.getNumber(),
                 subcategoryMapper.toResponses(subcategoryPage.getContent())
         );
+        log.info("SubcategoryServiceImpl.getAll.end: {}", subcategoryResponsePageData);
         return new SuccessDataResult<>(subcategoryResponsePageData, message);
     }
 
     @Override
     @Transactional
     public DataResult<SubcategoryDetailsResponse> update(UUID id, SubcategoryUpdateRequest request) {
+        log.info("SubcategoryServiceImpl.update.start: {}", id);
         SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id " + id));
 
@@ -89,14 +98,17 @@ public class SubcategoryServiceImpl implements SubcategoryService {
         }
 
         subcategoryMapper.updateRequestToEntity(request, subcategoryEntity);
+        log.info("SubcategoryServiceImpl.update.end: {}", subcategoryEntity);
         return new SuccessDataResult<>(subcategoryMapper.toDetailsResponse(subcategoryEntity), "Subcategory updated successfully");
     }
 
     @Override
     public Result delete(UUID id) {
+        log.info("SubcategoryServiceImpl.delete.start: {}", id);
         SubcategoryEntity entity = subcategoryRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id " + id));
         subcategoryRepository.delete(entity);
+        log.info("SubcategoryServiceImpl.delete.end: {}", entity);
         return new SuccessResult("Subcategory deleted successfully");
     }
 }

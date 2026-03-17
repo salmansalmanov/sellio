@@ -1,7 +1,7 @@
 package com.sellio.model.dto.response.core;
 
-import com.sellio.model.enums.UserStatus;
 import com.sellio.model.enums.Role;
+import com.sellio.model.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

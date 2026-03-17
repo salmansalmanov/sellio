@@ -4,13 +4,9 @@ import com.sellio.model.enums.PricingPlan;
 import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import lombok.experimental.SuperBuilder;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -30,6 +26,7 @@ public abstract class UserEntity extends BaseEntity {
     @ElementCollection
     @CollectionTable(name = "users_phone_numbers", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "phone_number")
+    @Builder.Default
     private Set<String> phoneNumbers = new HashSet<>();
 
     @Enumerated(EnumType.STRING)
