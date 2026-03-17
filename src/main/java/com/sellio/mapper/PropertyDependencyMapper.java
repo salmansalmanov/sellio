@@ -2,7 +2,6 @@ package com.sellio.mapper;
 
 import com.sellio.model.dto.response.core.PropertyDependencyDetailsResponse;
 import com.sellio.model.dto.response.core.PropertyDependencyResponse;
-import com.sellio.model.dto.response.core.PropertyValueGetResponse;
 import com.sellio.model.entity.PropertyDependencyEntity;
 import com.sellio.model.entity.PropertyValueEntity;
 import lombok.RequiredArgsConstructor;

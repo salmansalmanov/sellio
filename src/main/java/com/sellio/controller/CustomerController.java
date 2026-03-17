@@ -6,10 +6,8 @@ import com.sellio.model.dto.response.core.CustomerResponse;
 import com.sellio.model.result.DataResult;
 import com.sellio.model.result.PageData;
 import com.sellio.model.result.Result;
-import com.sellio.model.result.SuccessResult;
 import com.sellio.service.abstraction.CustomerService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,12 +25,7 @@ public class CustomerController {
     private final CustomerService customerService;
 
     @GetMapping
-    @Operation(
-            summary = "Get all customers",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get all customers")
     public ResponseEntity<DataResult<PageData<CustomerResponse>>> getAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -41,23 +34,13 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Get customer by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get customer by ID")
     public ResponseEntity<DataResult<CustomerDetailsResponse>> getCustomerById(@PathVariable UUID id) {
         return new ResponseEntity<>(customerService.getCustomerById(id), HttpStatus.OK);
     }
 
     @PutMapping("/{id}")
-    @Operation(
-            summary = "Update customer by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Update customer by ID")
     public ResponseEntity<DataResult<CustomerDetailsResponse>> updateCustomerById(
             @PathVariable UUID id,
             @RequestBody @Valid CustomerUpdateRequest request
@@ -66,12 +49,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete customer by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Delete customer by ID")
     public ResponseEntity<Result> deleteCustomerById(@PathVariable UUID id) {
         return new ResponseEntity<>(customerService.deleteCustomerById(id), HttpStatus.OK);
     }

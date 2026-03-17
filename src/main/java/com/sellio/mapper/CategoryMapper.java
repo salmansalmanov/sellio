@@ -5,8 +5,6 @@ import com.sellio.model.dto.request.CategoryUpdateRequest;
 import com.sellio.model.dto.response.core.CategoryDetailsResponse;
 import com.sellio.model.dto.response.core.CategoryResponse;
 import com.sellio.model.entity.CategoryEntity;
-import com.sellio.model.entity.SubcategoryEntity;
-import com.sellio.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
@@ -25,7 +23,7 @@ public class CategoryMapper {
 
     public CategoryDetailsResponse toDetailsResponse(CategoryEntity entity) {
         return CategoryDetailsResponse.builder()
-                .id(entity.getId())
+                .categoryId(entity.getId())
                 .name(entity.getName())
                 .subcategories(subcategoryMapper.toResponses(entity.getSubcategories()))
                 .build();

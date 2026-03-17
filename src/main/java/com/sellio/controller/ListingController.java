@@ -9,7 +9,6 @@ import com.sellio.model.result.PageData;
 import com.sellio.model.result.Result;
 import com.sellio.service.abstraction.ListingService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,13 +29,8 @@ import java.util.UUID;
 public class ListingController {
     private final ListingService listingService;
 
+    @Operation(summary = "Create listing")
     @PostMapping(consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @Operation(
-            summary = "Create listing",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "201")
-            }
-    )
     public ResponseEntity<DataResult<ListingDetailsResponse>> createListing(
             @RequestPart("data") @Valid ListingCreateRequest request,
             @RequestPart("images") List<MultipartFile> images
@@ -45,23 +39,13 @@ public class ListingController {
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Get listing by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get listing by ID")
     public ResponseEntity<DataResult<ListingDetailsResponse>> getListingById(@PathVariable UUID id) {
         return new ResponseEntity<>(listingService.getById(id), HttpStatus.OK);
     }
 
     @GetMapping
-    @Operation(
-            summary = "Get all listings",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get all listings")
     public ResponseEntity<DataResult<PageData<ListingResponse>>> getAllListings(
             @RequestParam(required = false) UUID ownerId,
             @RequestParam(defaultValue = "0") int page,
@@ -70,15 +54,10 @@ public class ListingController {
         return new ResponseEntity<>(listingService.getAll(ownerId, page, size), HttpStatus.OK);
     }
 
+    @Operation(summary = "Update listing by ID")
     @PutMapping(
             value = "/{id}",
             consumes = MediaType.MULTIPART_FORM_DATA_VALUE
-    )
-    @Operation(
-            summary = "Update listing by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
     )
     public ResponseEntity<DataResult<ListingDetailsResponse>> updateListingById(
             @PathVariable UUID id,
@@ -89,34 +68,19 @@ public class ListingController {
     }
 
     @PatchMapping("/deactivate/{id}")
-    @Operation(
-            summary = "Delete listing by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Deactivate listing by ID")
     public ResponseEntity<DataResult<ListingDetailsResponse>> deactivateListingById(@PathVariable UUID id) {
         return new ResponseEntity<>(listingService.deactivate(id), HttpStatus.OK);
     }
 
     @PatchMapping("/activate/{id}")
-    @Operation(
-            summary = "Activate listing by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Activate listing by ID")
     public ResponseEntity<DataResult<ListingDetailsResponse>> activateListingById(@PathVariable UUID id) {
         return new ResponseEntity<>(listingService.activate(id), HttpStatus.OK);
     }
 
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete listing by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Delete listing by ID")
     public ResponseEntity<Result> deleteListingById(@PathVariable UUID id) {
         return new ResponseEntity<>(listingService.delete(id), HttpStatus.OK);
     }

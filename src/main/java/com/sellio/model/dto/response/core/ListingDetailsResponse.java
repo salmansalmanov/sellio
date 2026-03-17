@@ -26,7 +26,7 @@ public class ListingDetailsResponse {
     private List<PropertyValueResponse> propertyValues;
     private Boolean isNew;
     private Boolean hasDelivery;
-    private UUID id;
+    private UUID listingId;
     private LocalDateTime updatedAt;
     private Long viewCount;
 }

@@ -12,11 +12,8 @@ import org.hibernate.Hibernate;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Component
 @RequiredArgsConstructor
@@ -51,7 +48,7 @@ public class ListingMapper {
                 .subcategory(subcategoryMapper.toResponse(entity.getSubcategory()))
                 .isNew(entity.isNew())
                 .hasDelivery(entity.isHasDelivery())
-                .id(entity.getId())
+                .listingId(entity.getId())
                 .updatedAt(entity.getUpdatedAt())
                 .build();
 

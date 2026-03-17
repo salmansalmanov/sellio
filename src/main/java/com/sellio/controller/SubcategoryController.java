@@ -9,7 +9,6 @@ import com.sellio.model.result.PageData;
 import com.sellio.model.result.Result;
 import com.sellio.service.abstraction.SubcategoryService;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -27,34 +26,19 @@ public class SubcategoryController {
     private final SubcategoryService subcategoryService;
 
     @PostMapping
-    @Operation(
-            summary = "Create subcategory",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "201")
-            }
-    )
+    @Operation(summary = "Create subcategory")
     public ResponseEntity<DataResult<SubcategoryDetailsResponse>> createSubcategory(@RequestBody @Valid SubcategoryCreateRequest request) {
         return new ResponseEntity<>(subcategoryService.save(request), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    @Operation(
-            summary = "Get subcategory by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get subcategory by ID")
     public ResponseEntity<DataResult<SubcategoryDetailsResponse>> getSubcategory(@PathVariable UUID id) {
         return new ResponseEntity<>(subcategoryService.getById(id), HttpStatus.OK);
     }
 
     @GetMapping
-    @Operation(
-            summary = "Get all subcategories",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Get all subcategories")
     public ResponseEntity<DataResult<PageData<SubcategoryResponse>>> getAllSubcategories(
             @RequestParam(required = false) UUID categoryId,
             @RequestParam(defaultValue = "0") int page,
@@ -64,12 +48,7 @@ public class SubcategoryController {
     }
 
     @PutMapping("/{id}")
-    @Operation(
-            summary = "Update subcategory by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Update subcategory by ID")
     public ResponseEntity<DataResult<SubcategoryDetailsResponse>> updateSubcategory(
             @PathVariable UUID id,
             @RequestBody @Valid SubcategoryUpdateRequest request
@@ -78,12 +57,7 @@ public class SubcategoryController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(
-            summary = "Delete subcategory by ID",
-            responses = {
-                    @ApiResponse(description = "Success", responseCode = "200")
-            }
-    )
+    @Operation(summary = "Delete subcategory by ID")
     public ResponseEntity<Result> deleteSubcategory(@PathVariable UUID id) {
         return new ResponseEntity<>(subcategoryService.delete(id), HttpStatus.OK);
     }

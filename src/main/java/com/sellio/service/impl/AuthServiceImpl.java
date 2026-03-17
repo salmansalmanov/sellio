@@ -24,7 +24,6 @@ import com.sellio.util.JwtUtil;
 import com.sellio.util.UserUtil;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
-import org.hibernate.validator.engine.HibernateValidatorEnhancedBean;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;

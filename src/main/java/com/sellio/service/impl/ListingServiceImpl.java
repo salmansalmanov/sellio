@@ -57,7 +57,7 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
-        String email = securityUtil.getCurrentUsernameOrEmail();
+        String email = securityUtil.getCurrentUser().getEmail();
         UserEntity owner = userRepository.findByIdentifier(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
 
@@ -120,14 +120,10 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> update(UUID id, ListingUpdateRequest request, List<MultipartFile> images) throws IOException {
-        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        checkPermission(listingEntity, userEntity);
 
+        securityUtil.validateListingAccess(listingEntity);
         listingEntity = listingMapper.updateRequestToEntity(request, listingEntity);
         if (images != null && !images.isEmpty()) {
             listingEntity.getImages().clear();
@@ -143,14 +139,10 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> deactivate(UUID id) {
-        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        checkPermission(listingEntity, userEntity);
 
+        securityUtil.validateListingAccess(listingEntity);
         listingEntity.setStatus(ListingStatus.INACTIVE);
         listingEntity.setExpireDate(LocalDateTime.now().plusMonths(1));
         ListingEntity savedEntity = listingRepository.save(listingEntity);
@@ -163,13 +155,9 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> activate(UUID id) {
-        String usernameOrEmail = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity userEntity = userRepository.findByIdentifier(usernameOrEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
-        checkPermission(entity, userEntity);
+        securityUtil.validateListingAccess(entity);
 
         entity.setStatus(ListingStatus.ACTIVE);
         entity.setExpireDate(LocalDateTime.now().plusMonths(1));
@@ -242,15 +230,6 @@ public class ListingServiceImpl implements ListingService {
                         .build();
                 listingEntity.getListingProperties().add(listingPropertyEntity);
             }
-        }
-    }
-
-    private void checkPermission(ListingEntity listingEntity, UserEntity userEntity) {
-        boolean isOwner = userEntity.getId().equals(listingEntity.getOwner().getId());
-        boolean isAdmin = userEntity.getRole() == Role.ADMIN || userEntity.getRole() == Role.SUPER_ADMIN;
-
-        if (!isOwner && !isAdmin) {
-            throw new AccessDeniedException("You are not allowed to access this resource");
         }
     }
 

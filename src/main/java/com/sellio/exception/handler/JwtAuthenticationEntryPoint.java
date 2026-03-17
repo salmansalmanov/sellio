@@ -2,10 +2,8 @@ package com.sellio.exception.handler;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sellio.model.result.ErrorResult;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.RequiredArgsConstructor;
 import org.jspecify.annotations.NonNull;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.AuthenticationException;

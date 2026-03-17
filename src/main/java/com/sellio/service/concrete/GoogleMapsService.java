@@ -35,7 +35,6 @@ public class GoogleMapsService {
             if (response == null) {
                 throw new GoogleMapsException("Google Maps response is null");
             }
-
             return addressMapper.toResponse(response);
         } catch (Exception e) {
             throw new GoogleMapsException("Google Maps exception: " + e.getMessage());

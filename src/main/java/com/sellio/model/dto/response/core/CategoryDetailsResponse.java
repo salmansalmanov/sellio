@@ -11,7 +11,7 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CategoryDetailsResponse {
-    private UUID id;
+    private UUID categoryId;
     private String name;
     private List<SubcategoryResponse> subcategories;
 }

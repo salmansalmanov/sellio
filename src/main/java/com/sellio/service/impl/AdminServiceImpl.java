@@ -12,7 +12,6 @@ import com.sellio.model.dto.response.core.AdminDetailsResponse;
 import com.sellio.model.dto.response.core.AdminResponse;
 import com.sellio.model.dto.response.core.UserResponse;
 import com.sellio.model.entity.AdminEntity;
-import com.sellio.model.entity.UserEntity;
 import com.sellio.model.enums.Role;
 import com.sellio.model.enums.UserStatus;
 import com.sellio.model.result.*;
@@ -28,7 +27,6 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -50,7 +48,6 @@ public class AdminServiceImpl implements AdminService {
     private final SecurityUtil securityUtil;
 
     @Override
-    @Transactional
     public void invite(AdminInviteRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new AlreadyExistsException("Email already exists");
@@ -69,15 +66,17 @@ public class AdminServiceImpl implements AdminService {
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         AdminRegisterRequest adminRegisterRequest = (AdminRegisterRequest) registerRequest;
         String key = "invite_" + registerRequest.getEmail();
-
-        if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
-            AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
-            entity.setStatus(UserStatus.ACTIVE);
-            entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
-            AdminEntity savedEntity = userRepository.save(entity);
-            redisTemplate.delete(key);
-            mailService.sendRegistrationMail(registerRequest.getEmail());
-            return new SuccessDataResult<>(adminMapper.toDetailsResponse(savedEntity), "Admin saved successfully");
+        String token = adminRegisterRequest.getToken();
+        if (token != null) {
+            if (adminRegisterRequest.getToken().equals(redisTemplate.opsForValue().get(key))) {
+                AdminEntity entity = adminMapper.registerRequestToEntity(adminRegisterRequest);
+                entity.setStatus(UserStatus.ACTIVE);
+                entity.setPassword(passwordEncoder.encode(adminRegisterRequest.getPassword()));
+                AdminEntity savedEntity = userRepository.save(entity);
+                redisTemplate.delete(key);
+                mailService.sendRegistrationMail(registerRequest.getEmail());
+                return new SuccessDataResult<>(adminMapper.toDetailsResponse(savedEntity), "Admin saved successfully");
+            }
         }
         throw new InvalidInputException("Invalid token");
     }
@@ -109,39 +108,32 @@ public class AdminServiceImpl implements AdminService {
     @Override
     @Transactional
     public DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request) {
-        String username = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUser = userRepository.findByIdentifier(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
-
         AdminEntity targetEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        securityUtil.validateAccess(targetEntity);
 
-        if (currentUser.getId().equals(targetEntity.getId()) || currentUser.getRole().equals(Role.SUPER_ADMIN)) {
-            targetEntity = adminMapper.updateRequestToEntity(request, targetEntity);
-            adminRepository.save(targetEntity);
-            mailService.sendUpdateMail(targetEntity.getEmail());
-            return new SuccessDataResult<>(adminMapper.toDetailsResponse(targetEntity), "Admin updated successfully");
+        if (!targetEntity.getUsername().equals(request.getUsername())) {
+            refreshTokenRepository.deleteByUser(targetEntity);
         }
-        throw new AccessDeniedException("Access denied");
+
+        targetEntity = adminMapper.updateRequestToEntity(request, targetEntity);
+        adminRepository.save(targetEntity);
+        mailService.sendUpdateMail(targetEntity.getEmail());
+        return new SuccessDataResult<>(adminMapper.toDetailsResponse(targetEntity), "Admin updated successfully. If you changed your username please login again");
     }
 
     @Override
     @Transactional
     public Result deleteAdminById(UUID id) {
-        String username = securityUtil.getCurrentUsernameOrEmail();
-        UserEntity currentUser = userRepository.findByIdentifier(username)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
         AdminEntity targetEntity = adminRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Admin not found with id: " + id));
+        securityUtil.validateAccess(targetEntity);
 
-        if (currentUser.getId().equals(targetEntity.getId()) || currentUser.getRole().equals(Role.SUPER_ADMIN)) {
-            refreshTokenRepository.deleteByUser(targetEntity);
-            adminRepository.delete(targetEntity);
-            if (targetEntity.getRole() != Role.SUPER_ADMIN) {
-                mailService.sendDeleteMail(targetEntity.getEmail());
-            }
-            return new SuccessResult("Admin deleted successfully");
+        refreshTokenRepository.deleteByUser(targetEntity);
+        adminRepository.delete(targetEntity);
+        if (targetEntity.getRole() != Role.SUPER_ADMIN) {
+            mailService.sendDeleteMail(targetEntity.getEmail());
         }
-        throw new AccessDeniedException("Access denied");
+        return new SuccessResult("Admin deleted successfully");
     }
 }

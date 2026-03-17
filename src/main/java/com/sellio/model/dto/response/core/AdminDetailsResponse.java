@@ -17,6 +17,7 @@ public class AdminDetailsResponse extends UserResponse {
     private String firstName;
     private String lastName;
     private String username;
+    private String email;
     private UserStatus status;
     private Role role;
 }
