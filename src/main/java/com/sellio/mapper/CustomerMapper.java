@@ -43,6 +43,7 @@ public class CustomerMapper {
                 .email(entity.getEmail())
                 .status(entity.getStatus())
                 .role(entity.getRole())
+                .pricingPlan(entity.getPricingPlan())
                 .build();
     }
 

@@ -16,8 +16,8 @@ import java.util.UUID;
 public class PropertyDependencyCreateRequest {
 
     @NotNull(message = "Parent property ID must not be null")
-    private UUID parentPropertyValueId; // marka -> apple iphone
+    private UUID parentPropertyValueId;
 
     @NotNull(message = "Child property ID must not be null")
-    private List<UUID> childPropertyValueIds; // model -> 17, 17 pro, 17 pro max
+    private List<UUID> childPropertyValueIds;
 }

@@ -19,6 +19,7 @@ import com.sellio.util.FileUtil;
 import com.sellio.util.RedisUtil;
 import com.sellio.util.SecurityUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ListingServiceImpl implements ListingService {
@@ -57,6 +59,7 @@ public class ListingServiceImpl implements ListingService {
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> save(ListingCreateRequest request, List<MultipartFile> images) throws IOException {
+        log.info("ListingServiceImpl.save.start: {}, {}", request, images);
         String email = securityUtil.getCurrentUser().getEmail();
         UserEntity owner = userRepository.findByIdentifier(email)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found with id"));
@@ -80,21 +83,25 @@ public class ListingServiceImpl implements ListingService {
         initializeListingCount(owner);
 
         mailService.sendListingCreatedMail(savedEntity.getOwner().getEmail());
+        log.info("ListingServiceImpl.save.end: {}", savedEntity);
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(savedEntity), "Listing created successfully");
     }
 
     @Override
     public DataResult<ListingDetailsResponse> getById(UUID id) {
+        log.info("ListingServiceImpl.getById.start: {}", id);
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
 
         ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
         response.setViewCount(redisUtil.initializeViewCount(id, DomainType.LISTING));
+        log.info("ListingServiceImpl.getById.end: {}", response);
         return new SuccessDataResult<>(response, "Listing found successfully");
     }
 
     @Override
     public DataResult<PageData<ListingResponse>> getAll(UUID ownerId, int page, int size) {
+        log.info("ListingServiceImpl.getAll.start: {}", ownerId);
         Pageable pageable = PageRequest.of(page, size, Sort.by("updatedAt").descending());
         Page<ListingEntity> listingPage;
 
@@ -114,12 +121,14 @@ public class ListingServiceImpl implements ListingService {
                 listingPage.getNumber(),
                 listingMapper.toResponses(listingPage.getContent())
         );
+        log.info("ListingServiceImpl.getAll.end: {}", listingResponsePageData);
         return new SuccessDataResult<>(listingResponsePageData, "Listings found successfully");
     }
 
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> update(UUID id, ListingUpdateRequest request, List<MultipartFile> images) throws IOException {
+        log.info("ListingServiceImpl.update.start: {}", id);
         ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
 
@@ -133,12 +142,14 @@ public class ListingServiceImpl implements ListingService {
         listingEntity.setExpireDate(LocalDateTime.now().plusMonths(1));
         listingRepository.save(listingEntity);
         mailService.sendListingUpdatedMail(listingEntity.getOwner().getEmail());
+        log.info("ListingServiceImpl.update.end: {}", listingEntity);
         return new SuccessDataResult<>(listingMapper.toDetailsResponse(listingEntity), "Listing updated successfully");
     }
 
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> deactivate(UUID id) {
+        log.info("ListingServiceImpl.deactivate.start: {}", id);
         ListingEntity listingEntity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
 
@@ -149,12 +160,14 @@ public class ListingServiceImpl implements ListingService {
         ListingDetailsResponse response = listingMapper.toDetailsResponse(savedEntity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
         mailService.sendListingExpiredMail(listingEntity.getOwner().getEmail());
+        log.info("ListingServiceImpl.deactivate.end: {}", listingEntity);
         return new SuccessDataResult<>(response, "Listing deactivated successfully");
     }
 
     @Override
     @Transactional
     public DataResult<ListingDetailsResponse> activate(UUID id) {
+        log.info("ListingServiceImpl.activate.start: {}", id);
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
         securityUtil.validateListingAccess(entity);
@@ -165,29 +178,35 @@ public class ListingServiceImpl implements ListingService {
         ListingDetailsResponse response = listingMapper.toDetailsResponse(entity);
         response.setViewCount(redisUtil.getViewCount(id, DomainType.LISTING));
         mailService.sendListingActivatedMail(entity.getOwner().getEmail());
+        log.info("ListingServiceImpl.activate.end: {}", entity);
         return new SuccessDataResult<>(response, "Listing activated successfully");
     }
 
     @Override
     public Result delete(UUID id) {
+        log.info("ListingServiceImpl.delete(id: {}", id);
         ListingEntity entity = listingRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Listing not found with id: " + id));
         redisTemplate.delete("listing_view_count_" + entity.getId());
         redisTemplate.opsForValue().decrement("listing_count_" + entity.getOwner().getId());
         listingRepository.delete(entity);
+        log.info("ListingServiceImpl.delete(id: {}", id);
         return new SuccessResult("Listing deleted successfully");
     }
 
     private String generateTitle(List<PropertyValueEntity> propertyValues) {
+        log.info("ListingServiceImpl.generateTitle.start: {}", propertyValues);
         if (propertyValues == null || propertyValues.isEmpty()) {
             return "New listing";
         }
+        log.info("ListingServiceImpl.generateTitle.end: {}", propertyValues);
         return propertyValues.stream()
                 .map(PropertyValueEntity::getValue)
                 .collect(Collectors.joining(" "));
     }
 
     private void initializeImages(List<MultipartFile> images, ListingEntity entity) throws IOException {
+        log.info("ListingServiceImpl.initializeImages.start: {}", entity);
         if (images != null && !images.isEmpty()) {
             for (int i = 0; i < images.size(); i++) {
                 MultipartFile image = images.get(i);
@@ -199,9 +218,11 @@ public class ListingServiceImpl implements ListingService {
                 );
             }
         }
+        log.info("ListingServiceImpl.initializeImages.end: {}", entity);
     }
 
     private void initializeEntities(ListingEntity listingEntity, ListingCreateRequest request) throws AccessDeniedException {
+        log.info("ListingServiceImpl.initializeEntities.start: {}", listingEntity);
         CityEntity cityEntity = cityRepository.findById(request.getCityId())
                 .orElseThrow(() -> new ResourceNotFoundException("City not found with id: " + request.getCityId()));
         listingEntity.setCity(cityEntity);
@@ -209,9 +230,11 @@ public class ListingServiceImpl implements ListingService {
         SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(request.getSubcategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Subcategory not found with id: " + request.getSubcategoryId()));
         listingEntity.setSubcategory(subcategoryEntity);
+        log.info("ListingServiceImpl.initializeEntities.end: {}", listingEntity);
     }
 
     private void initializeTitle(List<PropertyValueEntity> propertyValues, ListingEntity listingEntity, ListingCreateRequest request) {
+        log.info("ListingServiceImpl.initializeTitle.start: {}", propertyValues);
         String title;
         if (!listingEntity.getSubcategory().getIsTitleRequired()) {
             title = generateTitle(propertyValues);
@@ -219,9 +242,11 @@ public class ListingServiceImpl implements ListingService {
             title = request.getTitle();
         }
         listingEntity.setTitle(title);
+        log.info("ListingServiceImpl.initializeTitle.end: {}", listingEntity);
     }
 
     private void initializeListingProperties(ListingCreateRequest request, ListingEntity listingEntity, List<PropertyValueEntity> propertyValues) {
+        log.info("ListingServiceImpl.initializeListingProperties.start: {}", propertyValues);
         if (request.getPropertyValueIds() != null) {
             for (PropertyValueEntity propertyValue : propertyValues) {
                 ListingPropertyEntity listingPropertyEntity = ListingPropertyEntity.builder()
@@ -231,9 +256,11 @@ public class ListingServiceImpl implements ListingService {
                 listingEntity.getListingProperties().add(listingPropertyEntity);
             }
         }
+        log.info("ListingServiceImpl.initializeListingProperties.end: {}", listingEntity);
     }
 
     private void initializeListingCount(UserEntity userEntity) {
+        log.info("ListingServiceImpl.initializeListingCount.start: {}", userEntity);
         PricingPlan pricingPlan = userEntity.getPricingPlan();
         Long maxListingCount;
         String key = "listing_count_" + userEntity.getId();
@@ -247,7 +274,9 @@ public class ListingServiceImpl implements ListingService {
         Long currentListingCount = redisTemplate.opsForValue().increment(key);
         if (currentListingCount > maxListingCount) {
             redisTemplate.opsForValue().decrement(key);
+            log.error("ListingServiceImpl.initializeListingCount.end: {}", currentListingCount);
             throw new ListingLimitException("Listing limit exceeded for " + pricingPlan);
         }
+        log.info("ListingServiceImpl.initializeListingCount.end: {}", userEntity);
     }
 }

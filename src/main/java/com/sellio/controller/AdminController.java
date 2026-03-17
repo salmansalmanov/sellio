@@ -29,8 +29,7 @@ public class AdminController {
     @PostMapping("/invite")
     @Operation(summary = "Admin Invite API")
     public ResponseEntity<Result> inviteAdmin(@RequestBody @Valid AdminInviteRequest request) {
-        adminService.invite(request);
-        return ResponseEntity.ok(new SuccessResult("Admin invited successfully"));
+        return new ResponseEntity<>(adminService.invite(request), HttpStatus.OK);
     }
 
     @GetMapping
