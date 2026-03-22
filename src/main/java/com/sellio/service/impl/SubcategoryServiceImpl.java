@@ -32,7 +32,6 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     private final SubcategoryRepository subcategoryRepository;
 
     @Override
-    @Transactional
     public DataResult<SubcategoryDetailsResponse> save(SubcategoryCreateRequest request) {
         log.info("SubcategoryServiceImpl.save.start: {}", request);
         CategoryEntity categoryEntity = categoryRepository.findById(request.getCategoryId())
@@ -85,7 +84,6 @@ public class SubcategoryServiceImpl implements SubcategoryService {
     }
 
     @Override
-    @Transactional
     public DataResult<SubcategoryDetailsResponse> update(UUID id, SubcategoryUpdateRequest request) {
         log.info("SubcategoryServiceImpl.update.start: {}", id);
         SubcategoryEntity subcategoryEntity = subcategoryRepository.findById(id)

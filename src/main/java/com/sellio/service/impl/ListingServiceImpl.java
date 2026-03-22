@@ -147,7 +147,6 @@ public class ListingServiceImpl implements ListingService {
     }
 
     @Override
-    @Transactional
     public DataResult<ListingDetailsResponse> deactivate(UUID id) {
         log.info("ListingServiceImpl.deactivate.start: {}", id);
         ListingEntity listingEntity = listingRepository.findById(id)
@@ -165,7 +164,6 @@ public class ListingServiceImpl implements ListingService {
     }
 
     @Override
-    @Transactional
     public DataResult<ListingDetailsResponse> activate(UUID id) {
         log.info("ListingServiceImpl.activate.start: {}", id);
         ListingEntity entity = listingRepository.findById(id)
