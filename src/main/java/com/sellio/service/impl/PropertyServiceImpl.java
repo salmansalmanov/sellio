@@ -83,7 +83,6 @@ public class PropertyServiceImpl implements PropertyService {
     }
 
     @Override
-    @Transactional
     public DataResult<PropertyDetailsResponse> update(UUID id, PropertyUpdateRequest request) {
         log.info("PropertyServiceImpl.update.start: {}", id);
         PropertyEntity propertyEntity = propertyRepository.findById(id)

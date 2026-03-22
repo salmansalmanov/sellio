@@ -49,7 +49,6 @@ public class CustomerServiceImpl implements CustomerService {
     private final SecurityUtil securityUtil;
 
     @Override
-    @Transactional
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         log.info("CustomerServiceImpl.save.start: {}", registerRequest);
         CustomerRegisterRequest customerRegisterRequest = (CustomerRegisterRequest) registerRequest;
@@ -92,7 +91,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @Transactional
     public DataResult<CustomerDetailsResponse> updateCustomerById(UUID id, CustomerUpdateRequest request) {
         log.info("CustomerServiceImpl.updateCustomerById.start: {}", id);
         CustomerEntity targetEntity = customerRepository.findById(id)
@@ -107,7 +105,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    @Transactional
     public Result deleteCustomerById(UUID id) {
         log.info("CustomerServiceImpl.deleteCustomerById.start: {}", id);
         CustomerEntity targetEntity = customerRepository.findById(id)

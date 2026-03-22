@@ -64,7 +64,6 @@ public class CityServiceImpl implements CityService {
     }
 
     @Override
-    @Transactional
     public DataResult<CityResponse> update(UUID id, CityUpdateRequest request) {
         log.info("CityServiceImpl.update.start: {}", id);
         CityEntity entity = cityRepository.findById(id)
