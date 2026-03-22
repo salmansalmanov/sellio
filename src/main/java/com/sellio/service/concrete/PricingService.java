@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,9 +32,12 @@ public class PricingService {
     private final RedisTemplate<String, String> redisTemplate;
 
     @Transactional
-    public Result changePlan(PricingPlan pricingPlan) {
+    public Result changePlan(PricingPlan pricingPlan, UUID id) {
         log.info("ActionLog.changePlan.start: {}", pricingPlan);
         UserEntity currentUserEntity = securityUtil.getCurrentUser();
+        if (!currentUserEntity.getId().equals(id)) {
+            throw new AccessDeniedException("You don't have access for this");
+        }
         currentUserEntity.setPricingPlan(pricingPlan);
         userRepository.save(currentUserEntity);
 

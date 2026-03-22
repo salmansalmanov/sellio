@@ -8,10 +8,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PatchMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -20,9 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class SubscriptionController {
     private final PricingService pricingService;
 
-    @PatchMapping("/change-plan")
+    @PatchMapping("/change-plan/{id}")
     @Operation(summary = "Change plan")
-    public ResponseEntity<Result> changePlan(@RequestParam PricingPlan pricingPlan) {
-        return new ResponseEntity<>(pricingService.changePlan(pricingPlan), HttpStatus.OK);
+    public ResponseEntity<Result> changePlan(@RequestParam PricingPlan pricingPlan, @PathVariable UUID id) {
+        return new ResponseEntity<>(pricingService.changePlan(pricingPlan, id), HttpStatus.OK);
     }
 }
