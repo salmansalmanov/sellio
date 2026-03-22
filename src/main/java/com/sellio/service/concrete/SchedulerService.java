@@ -31,7 +31,6 @@ public class SchedulerService {
         processListingCleanup(ListingStatus.INACTIVE, "cleanupInactiveListings");
     }
 
-    @Transactional
     @Scheduled(cron = "0 0 1 * * *")
     public void changeStatusForExpiredListings() {
         log.info("ActionLog.changeStatusForExpiredListings.start");
@@ -48,13 +47,11 @@ public class SchedulerService {
         log.info("ActionLog.changeStatusForExpiredListings.end");
     }
 
-    @Transactional
     @Scheduled(cron = "0 0 2 * * *")
     public void cleanupExpiredListings() {
         processListingCleanup(ListingStatus.EXPIRED, "cleanupExpiredListings");
     }
 
-    @Transactional
     @Scheduled(cron = "0 0 3 * * *")
     public void cleanupLimitExceededListings() {
         log.info("ActionLog.cleanupLimitExceededListings.start");

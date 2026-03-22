@@ -62,7 +62,6 @@ public class ShopServiceImpl implements ShopService {
     private final SecurityUtil securityUtil;
 
     @Override
-    @Transactional
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) throws IOException {
         log.info("ShopServiceImpl.save.start: {}", registerRequest);
         ShopRegisterRequest shopRegisterRequest = (ShopRegisterRequest) registerRequest;
@@ -130,7 +129,6 @@ public class ShopServiceImpl implements ShopService {
     }
 
     @Override
-    @Transactional
     public DataResult<ShopDetailsResponse> updateShopById(UUID id, ShopUpdateRequest request, MultipartFile logo, MultipartFile banner) throws IOException {
         log.info("ShopServiceImpl.updateShopById.start: {}", id);
         ShopEntity targetEntity = shopRepository.findById(id)

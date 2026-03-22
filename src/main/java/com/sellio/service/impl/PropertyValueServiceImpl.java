@@ -35,7 +35,6 @@ public class PropertyValueServiceImpl implements PropertyValueService {
     private final PropertyValueRepository propertyValueRepository;
 
     @Override
-    @Transactional
     public DataResult<PropertyValueSaveResponse> save(PropertyValueAddRequest request) {
         log.info("PropertyValueServiceImpl.save.start: {}", request);
         PropertyEntity propertyEntity = propertyRepository.findById(request.getPropertyId())
@@ -95,16 +94,10 @@ public class PropertyValueServiceImpl implements PropertyValueService {
     }
 
     @Override
-    @Transactional
     public DataResult<PropertyValueGetResponse> update(UUID id, PropertyValueUpdateRequest request) {
         log.info("PropertyValueServiceImpl.update.start: {}", id);
         PropertyValueEntity propertyValueEntity = propertyValueRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Property value not found with id: " + id));
-        if (request.getPropertyId() != null) {
-            PropertyEntity propertyEntity = propertyRepository.findById(request.getPropertyId())
-                    .orElseThrow(() -> new ResourceNotFoundException("Property not found with id: " + request.getPropertyId()));
-            propertyValueEntity.setProperty(propertyEntity);
-        }
         propertyValueEntity = propertyValueMapper.updateRequestToEntity(request, propertyValueEntity);
         log.info("PropertyValueServiceImpl.update.end: {}", propertyValueEntity);
         return new SuccessDataResult<>(propertyValueMapper.toGetResponse(propertyValueEntity), "Property value updated successfully");

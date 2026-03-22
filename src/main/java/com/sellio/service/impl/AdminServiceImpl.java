@@ -68,7 +68,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public DataResult<UserResponse> save(RegisterRequest registerRequest, MultipartFile logo, MultipartFile banner) {
         log.info("AdminService.save.start: {}", registerRequest);
         AdminRegisterRequest adminRegisterRequest = (AdminRegisterRequest) registerRequest;
@@ -119,7 +118,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public DataResult<AdminDetailsResponse> updateAdminById(UUID id, AdminUpdateRequest request) {
         log.info("AdminService.updateAdminById.start: {}", id);
         AdminEntity targetEntity = adminRepository.findById(id)
@@ -138,7 +136,6 @@ public class AdminServiceImpl implements AdminService {
     }
 
     @Override
-    @Transactional
     public Result deleteAdminById(UUID id) {
         log.info("AdminService.deleteAdminById.start: {}", id);
         AdminEntity targetEntity = adminRepository.findById(id)

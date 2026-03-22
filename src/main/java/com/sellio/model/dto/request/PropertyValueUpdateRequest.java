@@ -13,5 +13,4 @@ import java.util.UUID;
 @AllArgsConstructor
 public class PropertyValueUpdateRequest {
     private String value;
-    private UUID propertyId;
 }
